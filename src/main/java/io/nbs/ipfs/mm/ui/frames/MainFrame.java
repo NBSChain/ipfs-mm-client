@@ -87,7 +87,7 @@ public class MainFrame extends JFrame {
      * @Description  :
      * 
      */
-    protected static MainFrame getContext(){
+    public static MainFrame getContext(){
         return context;
     }
 }

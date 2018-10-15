@@ -1,9 +1,11 @@
 package io.nbs.ipfs.mm;
 
+import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -25,8 +27,20 @@ public class Launcher {
     
     private JFrame currentFrame;
 
-    static {
+    /**
+     * 文件基础路径
+     * ${basedir}/.nbs/
+     * .nbs/download/cache
+     * files
+     * music
+     * videos
+     * profiles
+     */
+    public static String appBasePath;
+    public static String CURRENT_DIR;
 
+    static {
+        CURRENT_DIR = System.getProperty("user.dir");
     }
 
     public Launcher(){
@@ -55,6 +69,12 @@ public class Launcher {
      * 配置加载顺序：agrs 优先 于 dapp-conf.properties
      */
     private void initialStartup(String[] agrs){
+        appBasePath = DappCnsts.consturactPath(CURRENT_DIR,DappCnsts.NBS_ROOT);
+        File appBaseFile = new File(appBasePath);
+        if(!appBaseFile.exists()){
+            appBaseFile.mkdirs();
+        }
+
 
     }
 
