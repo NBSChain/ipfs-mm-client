@@ -2,7 +2,9 @@ package io.nbs.ipfs.mm;
 
 import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
+import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
 import io.nbs.ipfs.mm.ui.frames.MainFrame;
+import io.nbs.ipfs.mm.util.AppPropsUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
 import net.nbsio.ipfs.beans.PeerInfo;
@@ -11,6 +13,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,12 +30,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Launcher {
 
-    private Logger logger = LoggerFactory.getLogger(Launcher.class);
+    private static Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     private static Launcher context;
 
-    private static ConcurrentHashMap DAPP_CONFIG_MAP = new ConcurrentHashMap();
-    
     private JFrame currentFrame;
     public static ImageIcon logo ;
 
@@ -62,12 +66,11 @@ public class Launcher {
      */
     protected void launch(String[] agrs){
         PeerInfo peerInfo = null;
-        /* 1.初始化Dapp 配置 */
 
-        /* 2.处理启动参数 */
+        //读取 properties 初始化配置
+        processDappConf(agrs);
 
         initialStartup();
-
 
         currentFrame = new MainFrame(peerInfo);
 
@@ -79,6 +82,59 @@ public class Launcher {
         }
         currentFrame.setVisible(true);
     }
+
+    private void processDappConf(String[] args){
+        /* 1.初始化Dapp 配置 */
+        Properties props = AppPropsUtil.getAppProps();
+        if(props!=null){
+            Enumeration enumeration = props.propertyNames();
+            while (enumeration.hasMoreElements()){
+                String key = (String)enumeration.nextElement();
+                String val = AppPropsUtil.getProperty(key);
+                LaucherConfMapUtil.put(key,val);
+            }
+            logger.info("Dapp 配置加载中...");
+        }
+
+        /* 2.处理启动参数 */
+        for(String arg : args){
+            if(arg.equalsIgnoreCase("--wrap-with-directory")||arg.equalsIgnoreCase("-w")){
+                LaucherConfMapUtil.put(IPFSCnsts.WRAP_WITH_DIRECTORY_KEY,"true");
+            }
+        }
+
+        /* 加载 i18n */
+        String i18nConfName ;
+        if(!LaucherConfMapUtil.containsKey(DappCnsts.KEY_I18N_PROPS_FILE)){
+            i18nConfName = "zh-cn.properties";
+        }else {
+            i18nConfName = LaucherConfMapUtil.getValue(DappCnsts.KEY_I18N_PROPS_FILE)+ ".properties";
+        }
+        loadingI18n(i18nConfName);
+
+        logger.info("Dapp 配置加载完成...");
+        //LaucherConfMapUtil.show();
+    }
+
+    private boolean loadingI18n(String i18nName){
+        String file = DappCnsts.consturactPath(CURRENT_DIR,"conf",i18nName);
+        try{
+            Properties i18nProps = AppPropsUtil.loadExtProps(file);
+            if(i18nProps!=null){
+                Iterator<Map.Entry<Object, Object>> iterator = i18nProps.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry entry = iterator.next();
+                    String k = entry.getKey().toString();
+                    String v = entry.getValue().toString();
+                    LaucherConfMapUtil.put(k,v);
+                }
+            }
+            return true;
+        }catch (Exception e){
+            return false;
+        }
+    }
+
 
     /**
      * @author      : lanbery
@@ -97,32 +153,6 @@ public class Launcher {
         //TODO
     }
 
-    public static void initConfByKey(String k,Object v){
-        DAPP_CONFIG_MAP.put(k,v);
-    }
-
-    public static Object updateByKey(String k,Object v){
-        if(!DAPP_CONFIG_MAP.containsKey(k))throw new RuntimeException("the DAPP_KEY :"+k+"not exist.");
-        DAPP_CONFIG_MAP.put(k,v);
-        return v;
-    }
-
-    public static Object getDappConfigByKey(String k){
-        return DAPP_CONFIG_MAP.get(k);
-    }
-    
-    /**
-     * @author      : lanbery
-     * @Datetime    : 2018/10/15
-     * @Description  :
-     * 
-     */
-    public static String getStringDappConfigByKey(String key){
-        if(!DAPP_CONFIG_MAP.containsKey(key))return null;
-        
-        Object result = DAPP_CONFIG_MAP.get(key);
-        return result == null ? null : result.toString();
-    }
     
     /**
      * @author      : lanbery
@@ -132,5 +162,56 @@ public class Launcher {
      */
     public static Launcher getContext(){
         return context;
+    }
+
+    public static class LaucherConfMapUtil {
+        private static ConcurrentHashMap<String,String> DAPP_CONFIG_MAP = new ConcurrentHashMap();
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/15
+         * @Description  :
+         * 
+         */
+        public static void put(String key,String val){
+            DAPP_CONFIG_MAP.put(key,val);
+        }
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/15
+         * @Description  :
+         * 
+         */
+        public static String getValue(String key){
+            return DAPP_CONFIG_MAP.get(key);
+        }
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/15
+         * @Description  :
+         * 
+         */
+        public static boolean containsKey(String key){
+            return DAPP_CONFIG_MAP.containsKey(key);
+        }
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/15
+         * @Description  :
+         * 
+         */
+        public static String getValue(String key,String defVal){
+            return DAPP_CONFIG_MAP.getOrDefault(key,defVal);
+        }
+
+        public static void show(){
+            Iterator<Map.Entry<String,String>> it = DAPP_CONFIG_MAP.entrySet().iterator();
+            while (it.hasNext()){
+                Map.Entry<String,String> entry = it.next();
+                logger.info("{} = {}",entry.getKey(),entry.getValue());
+            }
+        }
     }
 }

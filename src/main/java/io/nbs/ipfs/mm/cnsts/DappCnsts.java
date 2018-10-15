@@ -1,5 +1,7 @@
 package io.nbs.ipfs.mm.cnsts;
 
+import java.awt.*;
+
 /**
  * Copyright © 2015-2020 NBSChain Holdings Limited.
  * All rights reserved.
@@ -33,7 +35,10 @@ public class DappCnsts {
      */
     public static String TOOL_ICON_PATH = "/icons/tools/";
 
+    /* KEYS  */
+    public static final String KEY_I18N_PROPS_FILE = "i18n";
 
+    public static Cursor HAND_CURSOR = new Cursor(Cursor.HAND_CURSOR);
 
 
     /**

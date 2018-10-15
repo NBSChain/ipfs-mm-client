@@ -88,7 +88,7 @@
         <finalName>dapp-mm</finalName>
         <resources>
             <resource>
-                <directory>conf/**</directory>
+                <directory>../conf/**</directory>
                 <targetPath>${build.outputDirectory}/</targetPath>
             </resource>
             <resource>
