@@ -1,10 +1,12 @@
 package io.nbs.ipfs.mm.ui.panels;
 
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
+import io.nbs.ipfs.mm.ui.components.GBC;
 import io.nbs.ipfs.mm.ui.components.NBSIconButton;
 import io.nbs.ipfs.mm.ui.components.VerticalFlowLayout;
 import io.nbs.ipfs.mm.ui.frames.MainFrame;
 import io.nbs.ipfs.mm.util.AvatarImageHandler;
+import io.nbs.ipfs.mm.util.ButtonIconUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import net.nbsio.ipfs.beans.PeerInfo;
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +78,24 @@ public class ToolbarPanel extends JPanel {
     }
 
     private void initView(){
+        setLayout(new GridBagLayout());
+        upButtonPanel.setOpaque(false);
 
+        upButtonPanel.add(avatarLabel);
+
+        upButtonPanel.add(infoBTN);
+        upButtonPanel.add(imBTN);
+        upButtonPanel.add(dataBTN);
+        upButtonPanel.add(musicBTN);
+
+
+        bottomPanel.add(aboutBTN);
+
+        add(upButtonPanel,
+                new GBC(0,0).setWeight(1,7).setFill(GBC.VERTICAL).setInsets(2,0,0,0));
+
+        add(bottomPanel,
+                new GBC(0,1).setWeight(1,1).setFill(GBC.VERTICAL).setInsets(0,0,2,0));
     }
 
     private void setListeners(){
@@ -85,7 +104,11 @@ public class ToolbarPanel extends JPanel {
 
     /*  comments : 初始化按钮 */
     private void initialButton(){
-
+        infoBTN = ButtonIconUtil.infoBTN;
+        imBTN = ButtonIconUtil.imBTN;
+        dataBTN =ButtonIconUtil.dataBTN;
+        musicBTN = ButtonIconUtil.musicBTN;
+        aboutBTN = ButtonIconUtil.aboutBTN;
     }
 
     public static ToolbarPanel getContext() {

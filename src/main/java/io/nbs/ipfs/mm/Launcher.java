@@ -1,6 +1,11 @@
 package io.nbs.ipfs.mm;
 
+import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
+import io.nbs.ipfs.mm.ui.frames.MainFrame;
+import io.nbs.ipfs.mm.util.IconUtil;
+import io.nbs.ipfs.mm.util.OSUtil;
+import net.nbsio.ipfs.beans.PeerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +31,7 @@ public class Launcher {
     private static ConcurrentHashMap DAPP_CONFIG_MAP = new ConcurrentHashMap();
     
     private JFrame currentFrame;
+    public static ImageIcon logo ;
 
     /**
      * 文件基础路径
@@ -45,6 +51,7 @@ public class Launcher {
 
     public Launcher(){
         context = this;
+        logo = IconUtil.getIcon(this,"/icons/nbs.png");
     }
 
     /**
@@ -54,11 +61,23 @@ public class Launcher {
      * 启动
      */
     protected void launch(String[] agrs){
+        PeerInfo peerInfo = null;
         /* 1.初始化Dapp 配置 */
 
         /* 2.处理启动参数 */
 
+        initialStartup();
 
+
+        currentFrame = new MainFrame(peerInfo);
+
+
+        currentFrame.setBackground(ColorCnst.WINDOW_BACKGROUND);
+        currentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        if(OSUtil.getOsType()!=OSUtil.Mac_OS){
+            currentFrame.setIconImage(logo.getImage());
+        }
+        currentFrame.setVisible(true);
     }
 
     /**
@@ -68,14 +87,14 @@ public class Launcher {
      * 启动初始化内容
      * 配置加载顺序：agrs 优先 于 dapp-conf.properties
      */
-    private void initialStartup(String[] agrs){
+    private void initialStartup(){
         appBasePath = DappCnsts.consturactPath(CURRENT_DIR,DappCnsts.NBS_ROOT);
         File appBaseFile = new File(appBasePath);
         if(!appBaseFile.exists()){
             appBaseFile.mkdirs();
         }
 
-
+        //TODO
     }
 
     public static void initConfByKey(String k,Object v){
