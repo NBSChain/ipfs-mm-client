@@ -10,11 +10,16 @@ import io.nbs.ipfs.mm.ui.components.VerticalFlowLayout;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
+import io.nbs.ipfs.mm.util.RegexUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.*;
 
@@ -66,7 +71,10 @@ public class InitStepIpfsFrame extends JFrame {
 
     private JLabel tipImage;
     private Icon passIcon;
-    private Icon failIcon;
+    private Icon warnIcon;
+
+    private JLabel tipApiLabel;
+    private JLabel tipGatewayLabel;
 
     public InitStepIpfsFrame (){
         initIpfsDefaultConf();//最先加载
@@ -80,6 +88,9 @@ public class InitStepIpfsFrame extends JFrame {
         hostStr = Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_HOST_KEY,"127.0.0.1");
         apiPort = Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_API_PORT_KEY,"5001");
         gatewayPort = Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PORT_KEY,"8080");
+
+        passIcon = IconUtil.getIcon(this,"/icons/pass18.png");
+        warnIcon = IconUtil.getIcon(this,"/icons/warn18.png");
     }
 
     /**
@@ -106,6 +117,16 @@ public class InitStepIpfsFrame extends JFrame {
         /**
          * 标题
          */
+        tipApiLabel = new JLabel();
+        tipApiLabel.setPreferredSize(new Dimension(18,18));
+        tipApiLabel.setIcon(passIcon);
+        tipApiLabel.setVisible(false);
+
+        tipGatewayLabel = new JLabel();
+        tipGatewayLabel.setPreferredSize(new Dimension(18,18));
+        tipGatewayLabel.setIcon(passIcon);
+        tipGatewayLabel.setVisible(false);
+
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new FlowLayout(FlowLayout.LEFT,10,2));
 
@@ -198,6 +219,7 @@ public class InitStepIpfsFrame extends JFrame {
 
         apiShowPanel.add(apiShowLabel);
         apiShowPanel.add(addrApiContents);
+        apiShowPanel.add(tipApiLabel);
 
         JPanel gatewayShowPanel = new JPanel();
         gatewayShowPanel.setLayout(new FlowLayout(FlowLayout.LEFT,5,2));
@@ -215,6 +237,7 @@ public class InitStepIpfsFrame extends JFrame {
 
         gatewayShowPanel.add(gatewayShowLabel);
         gatewayShowPanel.add(addrGatewayContents);
+        gatewayShowPanel.add(tipGatewayLabel);
 
         /* edit Panel Layout */
         editPanel.add(hostLabelPanel);
@@ -360,6 +383,94 @@ public class InitStepIpfsFrame extends JFrame {
             }
         });
 
+        connectButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean b = validIPFSCfg();
+                if(b){
+                    int type = 0;
+
+                    setValidTip(type);
+                }
+            }
+        });
+
+        /* */
+        hostField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                refreshAddressShow(e,1);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                refreshAddressShow(e,1);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                refreshAddressShow(e,1);
+            }
+        });
+
+        apiPortFeild.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                refreshAddressShow(e,2);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                refreshAddressShow(e,2);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                refreshAddressShow(e,2);
+            }
+        });
+
+        gatewayPortFeild.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                refreshAddressShow(e,3);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                refreshAddressShow(e,3);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                refreshAddressShow(e,3);
+            }
+        });
+    }
+
+
+    private void refreshAddressShow(DocumentEvent e,int type){
+        if(type <= 0 || type >3)return;
+        Document doc = e.getDocument();
+        try{
+            switch (type){
+                case 1 :
+                    hostStr = doc.getText(0,doc.getLength());
+                    break;
+                case 2 :
+                    apiPort = doc.getText(0,doc.getLength());
+                    break;
+                case 3 :
+                    gatewayPort = doc.getText(0,doc.getLength());
+                    break;
+                default:
+                    return;
+            }
+        }catch (BadLocationException ble){ }
+        addrApiContents.setText(buildAddress(true));
+        addrApiContents.updateUI();
+        addrGatewayContents.setText(buildAddress(false));
+        addrGatewayContents.updateUI();
     }
 
     private String buildAddress(boolean isApi){
@@ -395,5 +506,57 @@ public class InitStepIpfsFrame extends JFrame {
         Toolkit tk = Toolkit.getDefaultToolkit();
         this.setLocation((tk.getScreenSize().width - W) / 2,
                 (tk.getScreenSize().height - H) / 2);
+    }
+
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/16
+     * @Description  :
+     * 1 - api ;2 - gateway 3: all
+     */
+    private void setValidTip(int type){
+        switch (type){
+            case 1 :
+                tipApiLabel.setIcon(passIcon);
+                tipGatewayLabel.setIcon(warnIcon);
+                break;
+            case 2 :
+                tipApiLabel.setIcon(warnIcon);
+                tipGatewayLabel.setIcon(passIcon);
+                break;
+            case 3 :
+                tipApiLabel.setIcon(passIcon);
+                tipGatewayLabel.setIcon(passIcon);
+                break;
+            default:
+                tipApiLabel.setIcon(warnIcon);
+                tipGatewayLabel.setIcon(warnIcon);
+                break;
+        }
+        tipApiLabel.setVisible(true);
+        tipGatewayLabel.setVisible(true);
+        tipGatewayLabel.updateUI();
+        tipApiLabel.updateUI();
+    }
+
+
+    private boolean validIPFSCfg(){
+        if(!RegexUtils.checkIPv4Address(hostStr)){
+            showStatusPanel("Host IP 输入非法，请输入正确的IPv4 值.",null);
+            return false;
+        }
+        if(!RegexUtils.checkPort(apiPort)){
+            showStatusPanel("API 端口输入非法，请输入正确的端口值[80~65535].",null);
+            return false;
+        }
+        if(!RegexUtils.checkPort(gatewayPort)){
+            showStatusPanel("Gateway 端口输入非法，请输入正确的端口值[80~65535].",null);
+            return false;
+        }
+        if(apiPort.equals(gatewayPort)){
+            showStatusPanel("API 和 Gateway 端口不能相同.",null);
+            return false;
+        }
+        return true;
     }
 }
