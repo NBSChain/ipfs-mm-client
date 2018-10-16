@@ -1,5 +1,6 @@
 package io.nbs.ipfs.mm;
 
+import io.ipfs.api.IPFS;
 import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
@@ -49,6 +50,8 @@ public class Launcher {
     public static String appBasePath;
     public static String CURRENT_DIR;
 
+    private IPFS ipfs = null;
+
     static {
         CURRENT_DIR = System.getProperty("user.dir");
     }
@@ -69,8 +72,15 @@ public class Launcher {
 
         //读取 properties 初始化配置
         processDappConf(agrs);
-
         initialStartup();
+
+        String apiUrl;
+        try{
+            apiUrl = LaucherConfMapUtil.getIpfsAddressApi();
+        }catch (Exception e){
+
+        }
+
 
         currentFrame = new MainFrame(peerInfo);
 
@@ -212,6 +222,21 @@ public class Launcher {
                 Map.Entry<String,String> entry = it.next();
                 logger.info("{} = {}",entry.getKey(),entry.getValue());
             }
+        }
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/16
+         * @Description  :
+         * 
+         */
+        public static String getIpfsAddressApi() throws Exception {
+            if(!DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_HOST_KEY)||
+            !DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_API_PORT_KEY)||
+            !DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_ADDRESS_API_KEY)){
+                throw new Exception("no mining machine API config.");
+            }
+            return DAPP_CONFIG_MAP.get(IPFSCnsts.MM_ADDRESS_API_KEY);
         }
     }
 }
