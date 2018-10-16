@@ -64,6 +64,10 @@ public class InitStepIpfsFrame extends JFrame {
     private String apiPort;
     private String gatewayPort;
 
+    private JLabel tipImage;
+    private Icon passIcon;
+    private Icon failIcon;
+
     public InitStepIpfsFrame (){
         initIpfsDefaultConf();//最先加载
         initComponents();
