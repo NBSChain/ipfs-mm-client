@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.*;
 
 /**
  * Copyright © 2015-2020 NBSChain Holdings Limited.
@@ -31,6 +32,7 @@ public class InitStepIpfsFrame extends JFrame {
     private final String TITLE_KEY = "dapp.initStepIpfs.frame.title";
     private static final int W = 550;
     private static final int H = 350;
+    private static final int LINE_H = 22;
 
 
     private IPFS ipfs;
@@ -111,17 +113,17 @@ public class InitStepIpfsFrame extends JFrame {
         ctrlPanel.add(titlePanel,
                 new GBC(0,0).setWeight(6,1).setFill(GBC.HORIZONTAL).setInsets(0,0,0,0));
         ctrlPanel.add(closePanel,
-                new GBC(1,0).setWeight(1,1).setFill(GBC.HORIZONTAL).setInsets(0,40,30,0));
+                new GBC(1,0).setWeight(1,1).setFill(GBC.HORIZONTAL).setInsets(0,40,15,0));
 
         /**
          * 内容编辑区
          */
         editPanel = new JPanel();
-        editPanel.setLayout(new VerticalFlowLayout(VerticalFlowLayout.LEADING,10,25,false,false));
+        editPanel.setLayout(new VerticalFlowLayout(VerticalFlowLayout.LEADING,10,10,true,true));
 
-        Dimension labelDimension = new Dimension(180,30);
-        Dimension hostDimension = new Dimension(280,30);
-        Dimension portDimension = new Dimension(100,30);
+        Dimension labelDimension = new Dimension(160,LINE_H);
+        Dimension hostDimension = new Dimension(280,LINE_H);
+        Dimension portDimension = new Dimension(100,LINE_H);
         /* host */
         JPanel hostLabelPanel = new JPanel();
         hostLabelPanel.setLayout(new FlowLayout(FlowLayout.LEFT,5,2));
@@ -174,8 +176,8 @@ public class InitStepIpfsFrame extends JFrame {
         gatewayPortLabelPanel.add(gatewayPortFeild);
 
         /* show Panel */
-        Dimension showLabelDimesion = new Dimension(120,30);
-        Dimension showTextDimesion = new Dimension(350,30);
+        Dimension showLabelDimesion = new Dimension(160,LINE_H);
+        Dimension showTextDimesion = new Dimension(300,LINE_H);
         JPanel apiShowPanel = new JPanel();
         apiShowPanel.setLayout(new FlowLayout(FlowLayout.LEFT,5,2));
         JLabel apiShowLabel = new JLabel(Launcher.LaucherConfMapUtil.getValue("dapp.initStepIpfs.frame.address.api.label","Address.API :"));
@@ -185,7 +187,7 @@ public class InitStepIpfsFrame extends JFrame {
         addrApiContents = new JLabel();
         addrApiContents.setFont(FontUtil.getDefaultFont(15));
         addrApiContents.setHorizontalAlignment(JLabel.LEFT);
-        addrApiContents.setPreferredSize(showTextDimesion);
+        //addrApiContents.setPreferredSize(showTextDimesion);
         addrApiContents.setForeground(ColorCnst.FONT_ABOUT_TITLE_BLUE);
         String apiURI = buildAddress(true);
         addrApiContents.setText(apiURI);
@@ -202,7 +204,7 @@ public class InitStepIpfsFrame extends JFrame {
         addrGatewayContents = new JLabel();
         addrGatewayContents.setFont(FontUtil.getDefaultFont(15));
         addrGatewayContents.setHorizontalAlignment(JLabel.LEFT);
-        addrGatewayContents.setPreferredSize(showTextDimesion);
+        //addrGatewayContents.setPreferredSize(showTextDimesion);
         addrGatewayContents.setForeground(ColorCnst.FONT_ABOUT_TITLE_BLUE);
         String gwURI = buildAddress(false);
         addrGatewayContents.setText(gwURI);
@@ -245,7 +247,7 @@ public class InitStepIpfsFrame extends JFrame {
 
         cancleButton = new NBSButton(
                 Launcher.LaucherConfMapUtil.getValue("dapp.initStepIpfs.frame.button.cancel.label","取消"),
-                ColorCnst.FONT_GRAY_DARKER,ColorCnst.DARK);
+                ColorCnst.FONT_GRAY,ColorCnst.FONT_GRAY_DARKER);
         cancleButton.setFont(FontUtil.getDefaultFont(14));
         cancleButton.setPreferredSize(buttonDimesion);
 
@@ -269,7 +271,7 @@ public class InitStepIpfsFrame extends JFrame {
         if(OSUtil.getOsType() != OSUtil.Mac_OS){
             setUndecorated(true);
             framePanel.add(ctrlPanel,
-                    new GBC(0,0).setFill(GBC.HORIZONTAL).setWeight(1,1).setInsets(0,0,10,0));
+                    new GBC(0,0).setFill(GBC.HORIZONTAL).setWeight(1,1).setInsets(0,0,5,0));
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (ClassNotFoundException e) {
@@ -292,9 +294,67 @@ public class InitStepIpfsFrame extends JFrame {
                 new GBC(0,3).setWeight(1,1).setFill(GBC.BOTH).setInsets(5,0,10,0));
 
         add(framePanel);
+        centerScreen();
     }
 
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/16
+     * @Description  :
+     * 
+     */
     private void setListeners(){
+        closeLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                System.exit(1);
+                super.mouseClicked(e);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                closeLabel.setBackground(ColorCnst.LIGHT_GRAY);
+                super.mouseEntered(e);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                closeLabel.setBackground(ColorCnst.WINDOW_BACKGROUND);
+                super.mouseExited(e);
+            }
+        });
+
+        if (OSUtil.getOsType() != OSUtil.Mac_OS)
+        {
+            addMouseListener(new MouseAdapter()
+            {
+                public void mousePressed(MouseEvent e)
+                {
+                    // 当鼠标按下的时候获得窗口当前的位置
+                    origin.x = e.getX();
+                    origin.y = e.getY();
+                }
+            });
+
+            addMouseMotionListener(new MouseMotionAdapter()
+            {
+                public void mouseDragged(MouseEvent e)
+                {
+                    // 当鼠标拖动时获取窗口当前位置
+                    Point p = InitStepIpfsFrame.this.getLocation();
+                    // 设置窗口的位置
+                    InitStepIpfsFrame.this.setLocation(p.x + e.getX() - origin.x, p.y + e.getY()
+                            - origin.y);
+                }
+            });
+        }
+
+        cancleButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(1);
+            }
+        });
 
     }
 
@@ -322,5 +382,14 @@ public class InitStepIpfsFrame extends JFrame {
         statusLabel.setText("");
         statusLabel.setVisible(false);
         statusLabel.updateUI();
+    }
+
+    /**
+     * 居中设置
+     */
+    private void centerScreen(){
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        this.setLocation((tk.getScreenSize().width - W) / 2,
+                (tk.getScreenSize().height - H) / 2);
     }
 }

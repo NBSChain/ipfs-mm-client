@@ -4,6 +4,7 @@ import io.ipfs.api.IPFS;
 import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
+import io.nbs.ipfs.mm.ui.frames.InitStepIpfsFrame;
 import io.nbs.ipfs.mm.ui.frames.MainFrame;
 import io.nbs.ipfs.mm.util.AppPropsUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
@@ -78,12 +79,11 @@ public class Launcher {
         String apiUrl;
         try{
             apiUrl = LaucherConfMapUtil.getIpfsAddressApi();
+            currentFrame = new MainFrame(peerInfo);
         }catch (Exception e){
-
+            logger.info("首次启动Dapp .");
+            currentFrame = new InitStepIpfsFrame();
         }
-
-
-        currentFrame = new MainFrame(peerInfo);
 
         currentFrame.setBackground(ColorCnst.WINDOW_BACKGROUND);
         currentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -108,7 +108,7 @@ public class Launcher {
 
         /* 2.处理启动参数 */
         for(String arg : args){
-            if(arg.equalsIgnoreCase("--wrap-with-directory")||arg.equalsIgnoreCase("-w")){
+            if(arg.equalsIgnoreCase("--wrap-with-directory")|| arg.equalsIgnoreCase("-w")){
                 LaucherConfMapUtil.put(IPFSCnsts.WRAP_WITH_DIRECTORY_KEY,"true");
             }
         }
