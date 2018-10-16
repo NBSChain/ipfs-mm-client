@@ -210,6 +210,7 @@ public class InitialDappFrame extends JFrame {
                 titleLabel.setText(Launcher.LaucherConfMapUtil.getValue("dapp.initStepBase.frame.title","欢迎加入NBS Chain，请设置信息"));
                 break;
         }
+        titleLabel.updateUI();
         cardLayout.show(contentPanel,steps.name());
     }
 }
