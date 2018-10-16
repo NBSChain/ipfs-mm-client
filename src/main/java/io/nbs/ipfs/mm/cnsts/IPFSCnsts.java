@@ -16,4 +16,7 @@ public class IPFSCnsts {
     public final static String MM_HOST_KEY = "ipfs.mm.host";
     public final static String MM_API_PORT_KEY = "ipfs.mm.api-port";
     public final static String MM_ADDRESS_API_KEY = "ipfs.mm.address.api";
+    public final static String MM_GATEWAY_PORT_KEY = "ipfs.mm.gateway-port";
+    public final static String MM_ADDRESS_GATEWAY_KEY = "ipfs.mm.address.gateway";
+    public final static String MM_GATEWAY_PROTOCOL_KEY = "ipfs.mm.gateway.protocol";
 }

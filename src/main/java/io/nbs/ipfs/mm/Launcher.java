@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -231,11 +232,68 @@ public class Launcher {
          */
         public static String getIpfsAddressApi() throws Exception {
             if(!DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_HOST_KEY)||
-            !DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_API_PORT_KEY)||
-            !DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_ADDRESS_API_KEY)){
-                throw new Exception("no mining machine API config.");
+            !DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_API_PORT_KEY)){
+                throw new Exception("no Host API config.");
+            }
+
+            if(!DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_ADDRESS_API_KEY)){
+                StringBuffer valBuf = new StringBuffer();
+                valBuf.append("/ip4/")
+                        .append(LaucherConfMapUtil.getValue(IPFSCnsts.MM_HOST_KEY))
+                        .append("/tcp/")
+                        .append(LaucherConfMapUtil.getValue(IPFSCnsts.MM_API_PORT_KEY));
+                DAPP_CONFIG_MAP.put(IPFSCnsts.MM_ADDRESS_API_KEY,valBuf.toString());
+                buildAddressValue(true);
             }
             return DAPP_CONFIG_MAP.get(IPFSCnsts.MM_ADDRESS_API_KEY);
+        }
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/16
+         * @Description  :
+         * 
+         */
+        public static String getIpfsAddressGateway() throws Exception {
+            if(!DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_HOST_KEY)||
+                    !DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_API_PORT_KEY)){
+                throw new Exception("no Host Gateway config.");
+            }
+            if(!DAPP_CONFIG_MAP.containsKey(IPFSCnsts.MM_ADDRESS_GATEWAY_KEY)){
+                StringBuffer valBuf = new StringBuffer();
+                valBuf.append(LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PROTOCOL_KEY,"http"))
+                        .append("://")
+                        .append(LaucherConfMapUtil.getValue(IPFSCnsts.MM_HOST_KEY))
+                        .append(":")
+                        .append(LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PORT_KEY));
+                DAPP_CONFIG_MAP.put(IPFSCnsts.MM_ADDRESS_GATEWAY_KEY,valBuf.toString());
+                buildAddressValue(false);
+            }
+            return DAPP_CONFIG_MAP.get(IPFSCnsts.MM_ADDRESS_GATEWAY_KEY);
+        }
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/16
+         * @Description  :
+         *
+         */
+        private static void buildAddressValue(boolean apiAddress){
+            String tVal;
+            String tKey;
+            if(apiAddress){
+                tVal = "/ip4/${ipfs.mm.host}/tcp/${ipfs.mm.api-port}";
+                tKey = IPFSCnsts.MM_ADDRESS_API_KEY;
+            }else {
+                tVal = "${ipfs.mm.gateway.protocol}://${ipfs.mm.host}:${ipfs.mm.gateway-port}";
+                tKey = IPFSCnsts.MM_ADDRESS_GATEWAY_KEY;
+
+            }
+            try {
+                AppPropsUtil.setProperty(tKey,tVal,"update Address");
+            }catch (IOException e){
+                logger.warn("update Address configuration failed.",e.getCause());
+            }
         }
     }
 }

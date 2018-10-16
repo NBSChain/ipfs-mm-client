@@ -85,13 +85,13 @@ public final class AppPropsUtil {
      * @Description  :
      * 会保存文件
      */
-    public static boolean setProperty(String key,String value,String comments) throws Exception{
+    public static boolean setProperty(String key,String value,String comments) throws IOException{
         props.setProperty(key,value);
         if(comments==null)comments = "set property : " + key + " = " + value;
         return writeProps(comments);
     }
 
-    public static void setProperty(String key,String value) throws Exception{
+    public static void setProperty(String key,String value) {
         props.setProperty(key,value);
     }
 
@@ -101,11 +101,11 @@ public final class AppPropsUtil {
      * @Description  :存储配置
      *
      */
-    public static boolean saveConfig(String comment){
+    public static boolean saveConfig(String comment) throws IOException {
         return writeProps(comment);
     }
 
-    private static boolean writeProps(String comment){
+    private static boolean writeProps(String comment) throws IOException {
         String file = System.getProperty("user.dir") + PROPS_FILE_PATH;
         OutputStream os = null;
         try{
@@ -113,7 +113,7 @@ public final class AppPropsUtil {
             props.store(os,comment);
         }catch (IOException e){
             logger.error("write props config file error. file="+file,e.getCause());
-            return false;
+            throw e;
         }finally {
             try{
                 if(os!=null){
