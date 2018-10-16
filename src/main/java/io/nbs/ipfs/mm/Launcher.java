@@ -84,7 +84,6 @@ public class Launcher {
 
         currentFrame = new MainFrame(peerInfo);
 
-
         currentFrame.setBackground(ColorCnst.WINDOW_BACKGROUND);
         currentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         if(OSUtil.getOsType()!=OSUtil.Mac_OS){
@@ -123,7 +122,7 @@ public class Launcher {
         loadingI18n(i18nConfName);
 
         logger.info("Dapp 配置加载完成...");
-        //LaucherConfMapUtil.show();
+        LaucherConfMapUtil.show();
     }
 
     private boolean loadingI18n(String i18nName){

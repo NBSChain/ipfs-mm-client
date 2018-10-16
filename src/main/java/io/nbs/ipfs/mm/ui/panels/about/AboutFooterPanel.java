@@ -24,7 +24,7 @@ public class AboutFooterPanel extends ParentAvailablePanel {
     private static AboutFooterPanel context;
     private final String sitUrl;
 
-    private final String SITE_HOME = "nbsio.net";
+    private final String SITE_HOME;
 
     private JLabel siteLabel;
 
@@ -33,6 +33,7 @@ public class AboutFooterPanel extends ParentAvailablePanel {
      */
     public AboutFooterPanel(JPanel parent) {
         super(parent);
+        SITE_HOME = Launcher.LaucherConfMapUtil.getValue("nbs.site.home.label","nbsio.net");
         sitUrl = Launcher.LaucherConfMapUtil.getValue("nbs.site.home.url","http://nbsio.net/");
         initComponents();
         initView();
