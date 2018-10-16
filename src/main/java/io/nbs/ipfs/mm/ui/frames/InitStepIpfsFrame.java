@@ -11,6 +11,7 @@ import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
 import io.nbs.ipfs.mm.util.RegexUtils;
+import net.nbsio.ipfs.exceptions.IPFSInitialException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Copyright © 2015-2020 NBSChain Holdings Limited.
@@ -389,7 +392,15 @@ public class InitStepIpfsFrame extends JFrame {
                 boolean b = validIPFSCfg();
                 if(b){
                     int type = 0;
-
+                    try{
+                        checkedIpfsConnected();
+                        type =3;
+                        showStatusPanel("连接成功.",ColorCnst.MAIN_COLOR);
+                    }catch (IPFSInitialException ie){
+                        logger.warn(ie.getMessage());
+                        showStatusPanel("连接失败.",null);
+                        type = 0;
+                    }
                     setValidTip(type);
                 }
             }
@@ -444,6 +455,19 @@ public class InitStepIpfsFrame extends JFrame {
             @Override
             public void changedUpdate(DocumentEvent e) {
                 refreshAddressShow(e,3);
+            }
+        });
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/16
+         * @Description  :
+         * 下一步按钮
+         */
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                logger.info("next step.");
             }
         });
     }
@@ -559,4 +583,22 @@ public class InitStepIpfsFrame extends JFrame {
         }
         return true;
     }
+
+    private void checkedIpfsConnected() throws IPFSInitialException {
+        try{
+            ipfs = new IPFS(buildAddress(true));
+            Map m = ipfs.id();
+            logger.info("connect success.");
+        }catch (RuntimeException re){
+            logger.error("error",re.getCause());
+            logger.warn("initialize IPFS failed. API = {}",buildAddress(true));
+            throw new IPFSInitialException("IPFS initialized failed,please checked your configuration. ",re.getCause());
+        }catch (IOException ioe){
+            logger.error("error",ioe.getCause());
+            logger.warn("initialize IPFS failed. API = {}",buildAddress(true));
+            throw new IPFSInitialException("IPFS initialized failed,please checked your configuration. ",ioe.getCause());
+        }
+    }
+
+
 }
