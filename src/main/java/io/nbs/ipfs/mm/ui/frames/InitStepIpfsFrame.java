@@ -27,6 +27,7 @@ public class InitStepIpfsFrame extends JFrame {
     private static final int W = 550;
     private static final int H = 350;
 
+
     private IPFS ipfs;
     private static Point origin = new Point();
 
