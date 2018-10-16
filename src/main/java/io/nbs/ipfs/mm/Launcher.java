@@ -5,6 +5,7 @@ import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
 import io.nbs.ipfs.mm.ui.frames.InitStepIpfsFrame;
+import io.nbs.ipfs.mm.ui.frames.InitialDappFrame;
 import io.nbs.ipfs.mm.ui.frames.MainFrame;
 import io.nbs.ipfs.mm.util.AppPropsUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
@@ -15,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -39,6 +39,7 @@ public class Launcher {
 
     private JFrame currentFrame;
     public static ImageIcon logo ;
+    private static String[] argsParams = null;
 
     /**
      * 文件基础路径
@@ -71,19 +72,21 @@ public class Launcher {
      */
     protected void launch(String[] agrs){
         PeerInfo peerInfo = null;
-
+        argsParams = agrs;
         //读取 properties 初始化配置
         processDappConf(agrs);
         initialStartup();
 
         String apiUrl;
-        try{
-            apiUrl = LaucherConfMapUtil.getIpfsAddressApi();
-            currentFrame = new MainFrame(peerInfo);
-        }catch (Exception e){
-            logger.info("首次启动Dapp .");
-            currentFrame = new InitStepIpfsFrame();
-        }
+//        try{
+//            apiUrl = LaucherConfMapUtil.getIpfsAddressApi();
+//            currentFrame = new MainFrame(peerInfo);
+//        }catch (Exception e){
+//            logger.info("首次启动Dapp .");
+//            currentFrame = new InitStepIpfsFrame();
+//        }
+
+        currentFrame = new InitialDappFrame();
 
         currentFrame.setBackground(ColorCnst.WINDOW_BACKGROUND);
         currentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -289,10 +292,25 @@ public class Launcher {
                 tKey = IPFSCnsts.MM_ADDRESS_GATEWAY_KEY;
 
             }
-            try {
-                AppPropsUtil.setProperty(tKey,tVal,"update Address");
-            }catch (IOException e){
-                logger.warn("update Address configuration failed.",e.getCause());
+            AppPropsUtil.setProperty(tKey,tVal);
+        }
+
+        public static void reloadDappProps(){
+            Properties props = AppPropsUtil.reloadProps();
+
+            Enumeration enumeration = props.propertyNames();
+            while (enumeration.hasMoreElements()){
+                String key = (String)enumeration.nextElement();
+                String val = AppPropsUtil.getProperty(key);
+                LaucherConfMapUtil.put(key,val);
+            }
+
+            if(argsParams != null && argsParams.length>0){
+                for(String param : argsParams){
+                    if(param.equalsIgnoreCase("--wrap-with-directory")|| param.equalsIgnoreCase("-w")){
+                        LaucherConfMapUtil.put(IPFSCnsts.WRAP_WITH_DIRECTORY_KEY,"true");
+                    }
+                }
             }
         }
     }

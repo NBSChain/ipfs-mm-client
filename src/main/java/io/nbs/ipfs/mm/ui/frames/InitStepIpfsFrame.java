@@ -7,10 +7,7 @@ import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
 import io.nbs.ipfs.mm.ui.components.GBC;
 import io.nbs.ipfs.mm.ui.components.NBSButton;
 import io.nbs.ipfs.mm.ui.components.VerticalFlowLayout;
-import io.nbs.ipfs.mm.util.FontUtil;
-import io.nbs.ipfs.mm.util.IconUtil;
-import io.nbs.ipfs.mm.util.OSUtil;
-import io.nbs.ipfs.mm.util.RegexUtils;
+import io.nbs.ipfs.mm.util.*;
 import net.nbsio.ipfs.exceptions.IPFSInitialException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,7 +69,6 @@ public class InitStepIpfsFrame extends JFrame {
     private String apiPort;
     private String gatewayPort;
 
-    private JLabel tipImage;
     private Icon passIcon;
     private Icon warnIcon;
 
@@ -133,7 +129,7 @@ public class InitStepIpfsFrame extends JFrame {
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new FlowLayout(FlowLayout.LEFT,10,2));
 
-        JLabel titleLabel = new JLabel(Launcher.LaucherConfMapUtil.getValue(TITLE_KEY,"IPFS 链接设置"));
+        JLabel titleLabel = new JLabel(Launcher.LaucherConfMapUtil.getValue(TITLE_KEY,"NBS Chain API 设置"));
         titleLabel.setHorizontalAlignment(JLabel.LEFT);
         titleLabel.setFont(FontUtil.getDefaultFont(18));
         titlePanel.add(titleLabel);
@@ -304,13 +300,7 @@ public class InitStepIpfsFrame extends JFrame {
                     new GBC(0,0).setFill(GBC.HORIZONTAL).setWeight(1,1).setInsets(0,0,5,0));
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (InstantiationException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (UnsupportedLookAndFeelException e) {
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
                 e.printStackTrace();
             }
         }
@@ -467,11 +457,50 @@ public class InitStepIpfsFrame extends JFrame {
         nextButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                logger.info("next step.");
+                //logger.info("next step.");
+                nextStep(e);
             }
         });
     }
 
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/16
+     * @Description  :
+     *
+     */
+    private void nextStep(ActionEvent e){
+        try{
+            checkedIpfsConnected();
+            //update Dapp_Conf_Map
+            AppPropsUtil.setProperty(IPFSCnsts.MM_HOST_KEY,hostStr);
+            AppPropsUtil.setProperty(IPFSCnsts.MM_API_PORT_KEY,apiPort);
+            AppPropsUtil.setProperty(IPFSCnsts.MM_GATEWAY_PORT_KEY,gatewayPort);
+            AppPropsUtil.setProperty(IPFSCnsts.MM_GATEWAY_PROTOCOL_KEY,protocolStr);
+
+            Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_HOST_KEY,hostStr);
+            Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_API_PORT_KEY,apiPort);
+            Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_GATEWAY_PORT_KEY,gatewayPort);
+            Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_GATEWAY_PROTOCOL_KEY,protocolStr);
+
+            //save
+            AppPropsUtil.saveConfig("Update Dapp config.");
+            Launcher.LaucherConfMapUtil.reloadDappProps();
+
+            this.dispose();
+            InitStepDappFrame dappFrame = new InitStepDappFrame(ipfs);
+            dappFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            dappFrame.setBackground(ColorCnst.WINDOW_BACKGROUND);
+            dappFrame.setIconImage(Launcher.logo.getImage());
+            dappFrame.setVisible(true);
+
+        }catch (IPFSInitialException iie){
+            showStatusPanel(iie.getMessage(),null);
+        }catch (IOException ioe){
+            logger.error("save dapp config error .",ioe.getCause());
+            showStatusPanel("保存配置失败.请重试.",null);
+        }
+    }
 
     private void refreshAddressShow(DocumentEvent e,int type){
         if(type <= 0 || type >3)return;

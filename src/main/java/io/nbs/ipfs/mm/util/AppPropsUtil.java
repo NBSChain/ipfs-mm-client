@@ -57,6 +57,15 @@ public final class AppPropsUtil {
         }
         return props;
     }
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/16
+     * @Description  :
+     * 
+     */
+    public static Properties reloadProps(){
+        return loadProps();
+    }
 
     public static Properties getAppProps(){
         return props;
