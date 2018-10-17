@@ -1,5 +1,6 @@
 package io.nbs.ipfs.mm.ui.panels;
 
+import io.nbs.ipfs.mm.Launcher;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import io.nbs.ipfs.mm.ui.components.GBC;
 import io.nbs.ipfs.mm.ui.components.NBSIconButton;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.net.URL;
 
 /**
  * Copyright © 2015-2020 NBSChain Holdings Limited.
@@ -57,6 +59,8 @@ public class ToolbarPanel extends JPanel {
         initComponents();
         initView();
         setListeners();
+
+        syncLoadAvatar();
     }
 
     private void initComponents(){
@@ -66,8 +70,9 @@ public class ToolbarPanel extends JPanel {
         /* currentPeer avatar */
         PeerInfo peerInfo = MainFrame.getContext().getCurrentPeer();
         avatarLabel = new JLabel();
-        ImageIcon icon = getAvatarIcon(peerInfo);
-        avatarLabel.setIcon(icon);
+        //ImageIcon icon = getAvatarIcon(peerInfo);
+        //avatarLabel.setIcon(icon);
+        avatarLabel.setPreferredSize(new Dimension(48,48));
         avatarLabel.setHorizontalAlignment(JLabel.CENTER);
 
         initialButton();
@@ -96,6 +101,8 @@ public class ToolbarPanel extends JPanel {
 
         add(bottomPanel,
                 new GBC(0,1).setWeight(1,1).setFill(GBC.VERTICAL).setInsets(0,0,2,0));
+
+
     }
 
     private void setListeners(){
@@ -109,6 +116,34 @@ public class ToolbarPanel extends JPanel {
         dataBTN =ButtonIconUtil.dataBTN;
         musicBTN = ButtonIconUtil.musicBTN;
         aboutBTN = ButtonIconUtil.aboutBTN;
+    }
+
+    private void syncLoadAvatar(){
+        PeerInfo info = Launcher.getContext().getCurrentPeer();
+        if(info!=null && StringUtils.isNotBlank(info.getAvatar())){
+            new Thread(()->{
+                ImageIcon icon;
+                try{
+                    String avatarHash = info.getAvatar();
+                    String path = Launcher.LaucherConfMapUtil.getGatewayUrl(avatarHash);
+                    URL url = new URL(path);
+                    String avatarFilePath = DappCnsts.consturactPath(AvatarImageHandler.getAvatarProfileHome(),avatarHash+AvatarImageHandler.AVATAR_SUFFIX);
+                    File avatarFile = new File(avatarFilePath);
+                    AvatarImageHandler.getInstance().getFileFromIPFS(url,avatarFile);
+                    icon = AvatarImageHandler.getInstance().getImageIconFromOrigin(avatarFile,48);
+                    avatarLabel.setIcon(icon);
+                    avatarLabel.updateUI();
+                }catch (Exception e){
+                    icon = IconUtil.getIcon(this,"/icons/logo48.png");
+                    avatarLabel.setIcon(icon);
+                    avatarLabel.updateUI();
+                }
+            }).start();
+        }else {
+            ImageIcon iconDef = IconUtil.getIcon(this,"/icons/logo48.png");
+            avatarLabel.setIcon(iconDef);
+            avatarLabel.updateUI();
+        }
     }
 
     public static ToolbarPanel getContext() {

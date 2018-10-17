@@ -57,11 +57,6 @@ public class MainFrame extends JFrame {
 
     public MainFrame(PeerInfo peerInfo){
         context = this;
-        if (peerInfo==null){
-            logger.error("initial peer info error.");
-            //TODO
-            //throw new RuntimeException("initial peer info error");
-        }
         currentPeer = peerInfo;
 
         mainJPanel = new JPanel(true);

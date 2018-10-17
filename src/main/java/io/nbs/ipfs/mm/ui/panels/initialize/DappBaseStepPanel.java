@@ -13,12 +13,14 @@ import io.nbs.ipfs.mm.ui.components.VerticalFlowLayout;
 import io.nbs.ipfs.mm.ui.filters.AvatarImageFileFilter;
 
 import io.nbs.ipfs.mm.ui.frames.InitialDappFrame;
+import io.nbs.ipfs.mm.ui.frames.MainFrame;
 import io.nbs.ipfs.mm.ui.listener.AbstractMouseListener;
 import io.nbs.ipfs.mm.util.AppPropsUtil;
 import io.nbs.ipfs.mm.util.AvatarImageHandler;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import net.nbsio.ipfs.beans.NodeBase;
+import net.nbsio.ipfs.beans.PeerInfo;
 import net.nbsio.ipfs.cfg.ConfigCnsts;
 import net.nbsio.ipfs.helper.DataConvertHelper;
 import net.nbsio.ipfs.protocol.IPMParser;
@@ -75,6 +77,7 @@ public class DappBaseStepPanel extends JPanel {
     private String avatarName = null;
     private String nick = null;
     private String avatar = null;
+    private String id;
 
     private IPFS ipfs;
 
@@ -288,8 +291,8 @@ public class DappBaseStepPanel extends JPanel {
                             ,10);
                 }
 
-                //3.跳转 TODO
-
+                //3.跳转
+                openMainFrame();
             }
         });
 
@@ -315,6 +318,35 @@ public class DappBaseStepPanel extends JPanel {
                 changedNick(e);
             }
         });
+    }
+
+    private void openMainFrame(){
+        try{
+            if(ipfs==null)ipfs = new IPFS(Launcher.LaucherConfMapUtil.getIpfsAddressApi());
+            Launcher.getContext().setIpfs(ipfs);
+            PeerInfo info = Launcher.getContext().getCurrentPeer();
+            if(info==null)info = new PeerInfo();
+            info.setNick(nick);
+            info.setId(id);
+            if(StringUtils.isNotBlank(avatar)){
+                info.setAvatar(avatar);
+                info.setAvatarSuffix(ConfigCnsts.JSON_AVATAR_SUFFIX_PNG);
+            }
+            if(StringUtils.isNotBlank(avatarName))info.setAvatarName(avatarName);
+
+            Launcher.getContext().setCurrentPeer(info);
+
+            InitialDappFrame.getContext().dispose();
+            MainFrame frame = new MainFrame(info);
+
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setBackground(ColorCnst.WINDOW_BACKGROUND);
+            frame.setIconImage(Launcher.logo.getImage());
+            frame.setVisible(true);
+            Launcher.getContext().setCurrentFrame(frame);
+        }catch (Exception e){
+            logger.error(e.getMessage(),e.getCause());
+        }
     }
 
     private void changedNick(DocumentEvent de){
@@ -431,6 +463,7 @@ public class DappBaseStepPanel extends JPanel {
         try{
             Map m = ipfs.id();
             nodeBase = DataConvertHelper.getInstance().convertFromID(m);
+            id = nodeBase.getID();
             Map cfgMap = ipfs.config.show();
             if(cfgMap.containsKey(ConfigCnsts.JSON_NICKNAME_KEY)){
                 nick = cfgMap.get(ConfigCnsts.JSON_NICKNAME_KEY).toString();

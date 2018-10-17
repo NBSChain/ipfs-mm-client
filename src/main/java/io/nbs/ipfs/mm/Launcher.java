@@ -5,10 +5,14 @@ import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
 import io.nbs.ipfs.mm.ui.frames.InitialDappFrame;
+import io.nbs.ipfs.mm.ui.frames.MainFrame;
 import io.nbs.ipfs.mm.util.AppPropsUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
+import net.nbsio.ipfs.beans.NodeBase;
 import net.nbsio.ipfs.beans.PeerInfo;
+import net.nbsio.ipfs.cfg.ConfigCnsts;
+import net.nbsio.ipfs.helper.DataConvertHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,16 +56,10 @@ public class Launcher {
     public static String appBasePath;
     public static String CURRENT_DIR;
 
-    private IPFS ipfs = null;
+    private IPFS ipfs;
     private PeerInfo currentPeer;
     static {
         CURRENT_DIR = System.getProperty("user.dir");
-    }
-
-    public Launcher(){
-        context = this;
-        currentPeer = new PeerInfo();
-        logo = IconUtil.getIcon(this,"/icons/nbs.png");
     }
 
     /**
@@ -80,15 +78,16 @@ public class Launcher {
         initialStartup();
 
         String apiUrl;
-//        try{
-//            apiUrl = LaucherConfMapUtil.getIpfsAddressApi();
-//            currentFrame = new MainFrame(peerInfo);
-//        }catch (Exception e){
-//            logger.info("首次启动Dapp .");
-//            currentFrame = new InitStepIpfsFrame();
-//        }
-
-        currentFrame = new InitialDappFrame();
+        try{
+            apiUrl = LaucherConfMapUtil.getIpfsAddressApi();
+            ipfs = new IPFS(apiUrl);
+            // 组装peerInfo
+            buildCurrrentPeerInfo(ipfs);
+            currentFrame = new MainFrame(currentPeer);
+        }catch (Exception e){
+            logger.info("首次启动Dapp .");
+            currentFrame =  new InitialDappFrame();
+        }
 
         currentFrame.setBackground(ColorCnst.WINDOW_BACKGROUND);
         currentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -169,9 +168,29 @@ public class Launcher {
             temp.mkdirs();
         }
 
-        //TODO
+        //
     }
 
+    public void buildCurrrentPeerInfo(IPFS ipfs) throws Exception {
+        if(ipfs!=null){
+            if(currentPeer==null)currentPeer = new PeerInfo();
+            try {
+                Map dataMap = ipfs.id();
+                NodeBase nodeBase = DataConvertHelper.getInstance().convertFromID(dataMap);
+                currentPeer.setId(nodeBase.getID());
+                Map cfgMap = ipfs.config.show();
+                if(cfgMap.containsKey(ConfigCnsts.JSON_AVATAR_KEY))
+                    currentPeer.setAvatar(cfgMap.get(ConfigCnsts.JSON_AVATAR_KEY).toString());
+                if(cfgMap.containsKey(ConfigCnsts.JSON_AVATAR_NAME_KEY))
+                    currentPeer.setAvatarName(cfgMap.get(ConfigCnsts.JSON_AVATAR_NAME_KEY).toString());
+                if(cfgMap.containsKey(ConfigCnsts.JSON_NICKNAME_KEY))
+                    currentPeer.setNick(cfgMap.get(ConfigCnsts.JSON_NICKNAME_KEY).toString());
+            }catch (Exception e){
+                logger.error(e.getMessage(),e.getCause());
+                throw new Exception("客户端启动失败，请检查NBS Chain 服务.",e.getCause());
+            }
+        }
+    }
     
     /**
      * @author      : lanbery
@@ -339,5 +358,13 @@ public class Launcher {
 
     public void setCurrentPeer(PeerInfo currentPeer) {
         this.currentPeer = currentPeer;
+    }
+
+    public void setIpfs(IPFS ipfs) {
+        this.ipfs = ipfs;
+    }
+
+    public void setCurrentFrame(JFrame currentFrame) {
+        this.currentFrame = currentFrame;
     }
 }
