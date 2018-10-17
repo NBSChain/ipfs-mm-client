@@ -164,4 +164,19 @@ public final class AppPropsUtil {
         }
         return extProps;
     }
+
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/18
+     * @Description  :
+     * 
+     */
+    public static void setApiAndGatewayURL(){
+        if(props!=null){
+            if(!props.containsKey("ipfs.mm.address.api"))
+                props.setProperty("ipfs.mm.address.api","/ip4/${ipfs.mm.host}/tcp/${ipfs.mm.api-port}");
+            if(!props.containsKey("ipfs.mm.address.gateway"))
+                props.setProperty("ipfs.mm.address.gateway","${ipfs.mm.gateway.protocol}://${ipfs.mm.host}:${ipfs.mm.gateway-port}");
+        }
+    }
 }

@@ -14,16 +14,23 @@ import io.nbs.ipfs.mm.ui.filters.AvatarImageFileFilter;
 
 import io.nbs.ipfs.mm.ui.frames.InitialDappFrame;
 import io.nbs.ipfs.mm.ui.listener.AbstractMouseListener;
+import io.nbs.ipfs.mm.util.AppPropsUtil;
 import io.nbs.ipfs.mm.util.AvatarImageHandler;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import net.nbsio.ipfs.beans.NodeBase;
 import net.nbsio.ipfs.cfg.ConfigCnsts;
 import net.nbsio.ipfs.helper.DataConvertHelper;
+import net.nbsio.ipfs.protocol.IPMParser;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,6 +40,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Copyright © 2015-2020 NBSChain Holdings Limited.
@@ -48,6 +56,7 @@ public class DappBaseStepPanel extends JPanel {
     private static DappBaseStepPanel context;
 
     private JPanel          editPanel;
+    private JPanel          upPanel;
     private JTextArea       peerIdText;
     private JTextField      nickField;
 
@@ -91,6 +100,8 @@ public class DappBaseStepPanel extends JPanel {
      * 组件初始化
      */
     private void initComponents(){
+        upPanel = new JPanel();
+
         /**
          * 内容编辑区
          */
@@ -150,15 +161,31 @@ public class DappBaseStepPanel extends JPanel {
 
         editRight.add(nickPanel);
 
+
         /**
          * 放置编辑
          */
         editPanel.add(editLeft,
-                new GBC(0,0).setWeight(1,1).setFill(GBC.BOTH).setInsets(0,10,0,0));
+                new GBC(0,0).setWeight(1,100).setFill(GBC.BOTH).setInsets(0,10,0,0));
 
         editPanel.add(editRight,
-                new GBC(1,0).setWeight(7,1).setFill(GBC.BOTH).setInsets(0,0,0,10));
+                new GBC(1,0).setWeight(7,100).setFill(GBC.BOTH).setInsets(0,0,0,10));
 
+        upPanel.add(editPanel,BorderLayout.CENTER);
+
+        statusPanel = new JPanel();
+        //statusPanel.setBackground(Color.RED);
+        statusLabel = new JLabel();
+        statusLabel.setHorizontalAlignment(JLabel.LEFT);
+        statusLabel.setFont(FontUtil.getDefaultFont(14));
+        statusLabel.setForeground(ColorCnst.RED);
+        statusLabel.setVisible(true);
+        statusPanel.add(statusLabel);
+
+        upPanel.add(statusPanel,BorderLayout.SOUTH);
+
+
+        //Button Begin
         buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER,10,5));
         prevButton = new NBSButton(
@@ -187,7 +214,8 @@ public class DappBaseStepPanel extends JPanel {
     private void initView(){
         setLayout(new BorderLayout());
         avatarLabel.setCursor(DappCnsts.HAND_CURSOR);
-        add(editPanel,BorderLayout.CENTER);
+        add(upPanel,BorderLayout.CENTER);
+        //add(editPanel,BorderLayout.CENTER);
         add(buttonPanel,BorderLayout.SOUTH);
     }
 
@@ -226,6 +254,78 @@ public class DappBaseStepPanel extends JPanel {
                 uploadAvatar();
             }
         });
+
+        //保存
+        saveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(StringUtils.isBlank(nick)){
+                    showStatus(Launcher.LaucherConfMapUtil.getValue("dapp.initStepBase.frame.upload.nick.warning","please set nickname."),10);
+                    return;
+                }
+                //1.回写配置
+                AppPropsUtil.setApiAndGatewayURL();
+                try{
+                    AppPropsUtil.saveConfig("");
+                }catch (IOException ex){
+                    logger.error(ex.getMessage(),ex.getCause());
+                    showStatus("连接配置保存失败.",10);
+                    return;
+                }
+                //2.上传配置
+                try{
+                    if(ipfs==null)ipfs = new IPFS(Launcher.LaucherConfMapUtil.getIpfsAddressApi());
+                    ipfs.config.set(ConfigCnsts.JSON_AVATAR_KEY,avatar);
+                    ipfs.config.set(ConfigCnsts.JSON_NICKNAME_KEY, IPMParser.urlEncode(nick));
+                    ipfs.config.set(ConfigCnsts.JSON_AVATAR_NAME_KEY,IPMParser.urlEncode(avatarName));
+                    ipfs.config.set(ConfigCnsts.JSON_AVATAR_SUFFIX_KEY,ConfigCnsts.JSON_AVATAR_SUFFIX_PNG);
+                    logger.info("aHash:{} ;nick:{},aName:{}",avatar,nick,avatarName);
+                }catch (Exception  ex){
+
+                }
+
+                //3.跳转
+            }
+        });
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/18
+         * @Description  :
+         *
+         */
+        nickField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changedNick(e);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changedNick(e);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changedNick(e);
+            }
+        });
+    }
+
+    private void changedNick(DocumentEvent de){
+        Document document = de.getDocument();
+        String v;
+        try{
+            v = document.getText(0,document.getLength());
+            if(StringUtils.isBlank(v)){
+                showStatus(Launcher.LaucherConfMapUtil.getValue("dapp.initStepBase.frame.upload.nick.warning","please set nickname."),6);
+            }else {
+                clearStatus();
+            }
+            nick = v;
+        }catch (BadLocationException be){
+
+        }
     }
 
     /**
@@ -270,15 +370,36 @@ public class DappBaseStepPanel extends JPanel {
 
                 }catch (Exception e){
                     logger.error(e.getMessage(),e.getCause());
-                    //TODO
+                    showStatus(e.getMessage(),10);
                 }
                 logger.info("设置头像上传成功.");
             }).start();
-
         }else {
            // JOptionPane.showMessageDialog(this,
            //         Launcher.LaucherConfMapUtil.getValue("dapp.initStepBase.frame.upload.avatar.tip","Please selected Images file."));
         }
+    }
+
+    private void showStatus(String msg,int sleepSeconds){
+        statusLabel.setText(msg);
+        statusLabel.updateUI();
+
+        if(sleepSeconds>0){
+            new Thread(()->{
+                try{
+                    TimeUnit.SECONDS.sleep(sleepSeconds);
+                }catch (InterruptedException e){
+
+                }
+                statusLabel.setText("");
+                statusLabel.updateUI();
+            }).start();
+        }
+    }
+
+    private void clearStatus(){
+        statusLabel.setText("");
+        statusLabel.updateUI();
     }
 
     private File downloadAvatar(String hash) throws Exception{

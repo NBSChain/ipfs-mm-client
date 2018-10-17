@@ -397,10 +397,13 @@ public class DappIPFSStepPanel extends JPanel {
         AppPropsUtil.setProperty(IPFSCnsts.MM_API_PORT_KEY,apiPort);
         AppPropsUtil.setProperty(IPFSCnsts.MM_GATEWAY_PORT_KEY,gatewayPort);
         AppPropsUtil.setProperty(IPFSCnsts.MM_GATEWAY_PROTOCOL_KEY,protocolStr);
+
         Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_HOST_KEY,hostStr);
         Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_API_PORT_KEY,apiPort);
         Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_GATEWAY_PORT_KEY,gatewayPort);
         Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_GATEWAY_PROTOCOL_KEY,protocolStr);
+        Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_ADDRESS_API_KEY,buildAddress(true));
+        Launcher.LaucherConfMapUtil.put(IPFSCnsts.MM_ADDRESS_GATEWAY_KEY,buildAddress(false));
     }
 
     private void showStatusPanel(String content,Color color){

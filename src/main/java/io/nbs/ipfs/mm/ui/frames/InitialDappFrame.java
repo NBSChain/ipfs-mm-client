@@ -10,7 +10,6 @@ import io.nbs.ipfs.mm.ui.panels.initialize.DappIPFSStepPanel;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
-import net.nbsio.ipfs.beans.PeerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +35,7 @@ public class InitialDappFrame extends JFrame {
     private static final int H = 350;
 
     private IPFS ipfs;
+    public static Toolkit toolkit;
     private static Point origin = new Point();
 
     private static InitialDappFrame context;
@@ -56,6 +56,7 @@ public class InitialDappFrame extends JFrame {
 
     public InitialDappFrame(){
         context = this;
+        toolkit = Toolkit.getDefaultToolkit();
         initComponents();
         initView();
         setListeners();
@@ -124,7 +125,6 @@ public class InitialDappFrame extends JFrame {
         }
         framePanel.add(contentPanel,
                 new GBC(0,1).setWeight(1,100).setFill(GBC.BOTH).setInsets(5,0,10,0));
-
 
         add(framePanel);
     }

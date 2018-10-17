@@ -39,6 +39,7 @@ public class Launcher {
     public static ImageIcon logo ;
     private static String[] argsParams = null;
 
+
     /**
      * 文件基础路径
      * ${basedir}/.nbs/
