@@ -288,7 +288,7 @@ public class DappBaseStepPanel extends JPanel {
                             ,10);
                 }
 
-                //3.跳转
+                //3.跳转 TODO
 
             }
         });
@@ -439,8 +439,21 @@ public class DappBaseStepPanel extends JPanel {
             }
             if(cfgMap.containsKey(ConfigCnsts.JSON_AVATAR_KEY)){
                 avatar = cfgMap.get(ConfigCnsts.JSON_AVATAR_KEY).toString();
-                //TODO 加载头像
+                new Thread(()->{
+                    //独立线程 加载头像
+                    File dlAvatar ;
+                    try{
+                        dlAvatar = downloadAvatar(avatar);
+                        ImageIcon icon = imageHandler.getImageIconFromOrigin(dlAvatar,128);
+                        if(null != icon){
+                            avatarLabel.setIcon(icon);
+                            avatarLabel.updateUI();
+                        }
+                    }catch (Exception ex){
+                    }
+                }).start();
             }
+            if(cfgMap.containsKey(ConfigCnsts.JSON_AVATAR_NAME_KEY))avatarName = cfgMap.get(ConfigCnsts.JSON_AVATAR_NAME_KEY).toString();
             fillInfo(nodeBase,nick);
         }catch (IOException e){
             logger.warn(e.getMessage(),e.getCause());
