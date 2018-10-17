@@ -48,6 +48,7 @@ public class InitialDappFrame extends JFrame {
     private JPanel contentPanel;
     private DappIPFSStepPanel ipfsStepPanel;
     private DappBaseStepPanel baseStepPanel;
+    public  static Dimension buttonDimesion = new Dimension(115,35);
 
     public InitialDappFrame(){
         context = this;
@@ -89,11 +90,10 @@ public class InitialDappFrame extends JFrame {
 
         /* contents cards */
 
-
-
         cardLayout = new CardLayout();
         contentPanel = new JPanel();
         contentPanel.setLayout(cardLayout);
+
         ipfsStepPanel = new DappIPFSStepPanel();
         baseStepPanel = new DappBaseStepPanel();
 
@@ -201,7 +201,7 @@ public class InitialDappFrame extends JFrame {
      * @Description  :
      * 
      */
-    private void showStep(InitDappSteps steps){
+    public void showStep(InitDappSteps steps){
         switch (steps){
             case setIpfs:
                 titleLabel.setText(Launcher.LaucherConfMapUtil.getValue("dapp.initStepIpfs.frame.title","NBS Host 设置"));

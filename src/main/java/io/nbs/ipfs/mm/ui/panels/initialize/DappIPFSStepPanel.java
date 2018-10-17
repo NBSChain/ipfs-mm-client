@@ -5,11 +5,14 @@ import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
 import io.nbs.ipfs.mm.ui.components.NBSButton;
 import io.nbs.ipfs.mm.ui.components.VerticalFlowLayout;
+import io.nbs.ipfs.mm.ui.frames.InitialDappFrame;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  * Copyright © 2015-2020 NBSChain Holdings Limited.
@@ -23,6 +26,7 @@ import java.awt.*;
 public class DappIPFSStepPanel extends JPanel {
 
     private static final int LINE_H = 22;
+
 
     private JPanel editPanel;
     private JPanel statusPanel;
@@ -186,7 +190,6 @@ public class DappIPFSStepPanel extends JPanel {
         editPanel.add(apiShowPanel);
         editPanel.add(gatewayShowPanel);
 
-
         /* Status Panel */
         statusPanel = new JPanel();
         statusLabel = new JLabel();
@@ -196,7 +199,6 @@ public class DappIPFSStepPanel extends JPanel {
         statusPanel.add(statusLabel);
 
         /* Operation Panel */
-        Dimension buttonDimesion = new Dimension(115,35);
         buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER,10,5));
 
@@ -204,19 +206,19 @@ public class DappIPFSStepPanel extends JPanel {
                 Launcher.LaucherConfMapUtil.getValue("dapp.initStepIpfs.frame.button.connect.label","测试连接"),
                 ColorCnst.MAIN_COLOR,ColorCnst.MAIN_COLOR_DARKER);
         connectButton.setFont(FontUtil.getDefaultFont(14));
-        connectButton.setPreferredSize(buttonDimesion);
+        connectButton.setPreferredSize(InitialDappFrame.buttonDimesion);
 
         nextButton  = new NBSButton(
                 Launcher.LaucherConfMapUtil.getValue("dapp.initStepIpfs.frame.button.next.label","下一步"),
                 ColorCnst.MAIN_COLOR,ColorCnst.MAIN_COLOR_DARKER);
         nextButton.setFont(FontUtil.getDefaultFont(14));
-        nextButton.setPreferredSize(buttonDimesion);
+        nextButton.setPreferredSize(InitialDappFrame.buttonDimesion);
 
         cancleButton = new NBSButton(
                 Launcher.LaucherConfMapUtil.getValue("dapp.initStepIpfs.frame.button.cancel.label","取消"),
                 ColorCnst.FONT_GRAY,ColorCnst.FONT_GRAY_DARKER);
         cancleButton.setFont(FontUtil.getDefaultFont(14));
-        cancleButton.setPreferredSize(buttonDimesion);
+        cancleButton.setPreferredSize(InitialDappFrame.buttonDimesion);
 
         buttonPanel.add(connectButton);
         buttonPanel.add(nextButton);
@@ -228,8 +230,20 @@ public class DappIPFSStepPanel extends JPanel {
         add(buttonPanel,BorderLayout.SOUTH);
     }
 
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/17
+     * @Description  :
+     * 事件设置
+     */
     private void setListeners(){
 
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                InitialDappFrame.getContext().showStep(InitialDappFrame.InitDappSteps.setDapp);
+            }
+        });
     }
 
 
