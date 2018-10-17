@@ -40,6 +40,7 @@ public class DappCnsts {
 
     public static Cursor HAND_CURSOR = new Cursor(Cursor.HAND_CURSOR);
 
+    public final static String TMP_SUB_PATH = "tmp";
 
     /**
      * comments :

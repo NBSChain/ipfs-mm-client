@@ -4,9 +4,7 @@ import io.ipfs.api.IPFS;
 import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
-import io.nbs.ipfs.mm.ui.frames.InitStepIpfsFrame;
 import io.nbs.ipfs.mm.ui.frames.InitialDappFrame;
-import io.nbs.ipfs.mm.ui.frames.MainFrame;
 import io.nbs.ipfs.mm.util.AppPropsUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
@@ -54,13 +52,14 @@ public class Launcher {
     public static String CURRENT_DIR;
 
     private IPFS ipfs = null;
-
+    private PeerInfo currentPeer;
     static {
         CURRENT_DIR = System.getProperty("user.dir");
     }
 
     public Launcher(){
         context = this;
+        currentPeer = new PeerInfo();
         logo = IconUtil.getIcon(this,"/icons/nbs.png");
     }
 
@@ -71,7 +70,9 @@ public class Launcher {
      * 启动
      */
     protected void launch(String[] agrs){
-        PeerInfo peerInfo = null;
+        context = this;
+        currentPeer = new PeerInfo();
+        logo = IconUtil.getIcon(this,"/icons/nbs.png");
         argsParams = agrs;
         //读取 properties 初始化配置
         processDappConf(agrs);
@@ -161,6 +162,10 @@ public class Launcher {
         File appBaseFile = new File(appBasePath);
         if(!appBaseFile.exists()){
             appBaseFile.mkdirs();
+        }
+        File temp = new File(DappCnsts.consturactPath(appBasePath,DappCnsts.TMP_SUB_PATH));
+        if(!temp.exists()){
+            temp.mkdirs();
         }
 
         //TODO
@@ -274,6 +279,18 @@ public class Launcher {
             }
             return DAPP_CONFIG_MAP.get(IPFSCnsts.MM_ADDRESS_GATEWAY_KEY);
         }
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/17
+         * @Description  :
+         * 
+         */
+        public static String getGatewayUrl(String subHash) throws Exception{
+            if(subHash==null||subHash.trim().equals("")|| subHash.length()<10)throw new Exception("parameter subHash is null or not hash");
+            if(subHash.startsWith("/"))subHash = subHash.substring(1);
+            String rootUrl = getIpfsAddressGateway();
+            return rootUrl+"/ipfs/"+subHash;
+        }
 
         /**
          * @author      : lanbery
@@ -313,5 +330,13 @@ public class Launcher {
                 }
             }
         }
+    }
+
+    public PeerInfo getCurrentPeer() {
+        return currentPeer;
+    }
+
+    public void setCurrentPeer(PeerInfo currentPeer) {
+        this.currentPeer = currentPeer;
     }
 }

@@ -68,6 +68,7 @@ public class AvatarImageHandler {
         AVATAR_PROFILE_HOME = DappCnsts.consturactPath(Launcher.appBasePath,"profile","avatars");
         AVATAR_ORIGIN_HOME = DappCnsts.consturactPath(Launcher.appBasePath,"cache","avatars");
         AVATAR_CUSTOM_HOME = DappCnsts.consturactPath(Launcher.appBasePath,"cache","avatars","custom");
+        initAvatarLocalDir();
     }
 
     /**
@@ -186,17 +187,17 @@ public class AvatarImageHandler {
      * @param hashFileName
      * @throws Exception
      */
-    public String createdAvatar4Profile(File srcFile,String hashFileName) throws Exception {
+    public File createdAvatar4Profile(File srcFile,String hashFileName) throws Exception {
         if(!srcFile.exists())throw new Exception("图片源不存在.");
         String originName = StringUtils.isBlank(hashFileName) ? srcFile.getName() : hashFileName;
         /**
          * 128*128
          */
         originName = originName.substring(0,originName.lastIndexOf("."))+AVATAR_SUFFIX;
-        String target128 = DappCnsts.consturactPath(AVATAR_PROFILE_HOME,originName);
-        File targetFile128 = new File(target128);
-        generateThumbScale(srcFile,targetFile128,DEFAULT_PROFILE_AVATAR_SIZE);
-        return originName;
+        String target = DappCnsts.consturactPath(AVATAR_PROFILE_HOME,originName);
+        File targetFile = new File(target);
+        generateThumbScale(srcFile,targetFile,DEFAULT_PROFILE_AVATAR_SIZE);
+        return targetFile;
     }
 
     /**

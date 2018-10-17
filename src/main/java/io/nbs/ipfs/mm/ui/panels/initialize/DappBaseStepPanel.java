@@ -1,18 +1,38 @@
 package io.nbs.ipfs.mm.ui.panels.initialize;
 
+import io.ipfs.api.IPFS;
+import io.ipfs.api.MerkleNode;
+import io.ipfs.api.NamedStreamable;
+import io.nbs.ipfs.commons.RadomCharactersHelper;
 import io.nbs.ipfs.mm.Launcher;
 import io.nbs.ipfs.mm.cnsts.ColorCnst;
+import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import io.nbs.ipfs.mm.ui.components.GBC;
 import io.nbs.ipfs.mm.ui.components.NBSButton;
 import io.nbs.ipfs.mm.ui.components.VerticalFlowLayout;
+import io.nbs.ipfs.mm.ui.filters.AvatarImageFileFilter;
+
 import io.nbs.ipfs.mm.ui.frames.InitialDappFrame;
+import io.nbs.ipfs.mm.ui.listener.AbstractMouseListener;
+import io.nbs.ipfs.mm.util.AvatarImageHandler;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
+import net.nbsio.ipfs.beans.NodeBase;
+import net.nbsio.ipfs.cfg.ConfigCnsts;
+import net.nbsio.ipfs.helper.DataConvertHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Copyright © 2015-2020 NBSChain Holdings Limited.
@@ -24,6 +44,8 @@ import java.awt.event.ActionListener;
  * Created  : 2018/10/16
  */
 public class DappBaseStepPanel extends JPanel {
+    private Logger logger = LoggerFactory.getLogger(DappBaseStepPanel.class);
+    private static DappBaseStepPanel context;
 
     private JPanel          editPanel;
     private JTextArea       peerIdText;
@@ -41,9 +63,22 @@ public class DappBaseStepPanel extends JPanel {
     private JPanel statusPanel;
     private JLabel avatarLabel;
 
+    private String avatarName = null;
+    private String nick = null;
+    private String avatar = null;
 
+    private IPFS ipfs;
+
+    private JFileChooser fileChooser;
+
+    /**
+     * 头像处理工具类
+     */
+    private AvatarImageHandler imageHandler;
 
     public DappBaseStepPanel(){
+        context = this;
+        imageHandler = AvatarImageHandler.getInstance();
         initComponents();
         initView();
         setListeners();
@@ -115,8 +150,6 @@ public class DappBaseStepPanel extends JPanel {
 
         editRight.add(nickPanel);
 
-
-
         /**
          * 放置编辑
          */
@@ -150,9 +183,10 @@ public class DappBaseStepPanel extends JPanel {
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
     }
+
     private void initView(){
         setLayout(new BorderLayout());
-
+        avatarLabel.setCursor(DappCnsts.HAND_CURSOR);
         add(editPanel,BorderLayout.CENTER);
         add(buttonPanel,BorderLayout.SOUTH);
     }
@@ -164,5 +198,149 @@ public class DappBaseStepPanel extends JPanel {
                 InitialDappFrame.getContext().showStep(InitialDappFrame.InitDappSteps.setIpfs);
             }
         });
+
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(1);
+            }
+        });
+
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/17
+         * @Description  :
+         *
+         */
+        avatarLabel.addMouseListener(new AbstractMouseListener(){
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                uploadAvatar();
+                //super.mouseClicked(e);
+            }
+        });
+
+        avatarButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                uploadAvatar();
+            }
+        });
+    }
+
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/17
+     * @Description  :
+     * 上传头像
+     */
+    private void uploadAvatar(){
+        fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        AvatarImageFileFilter fileFilter = new AvatarImageFileFilter();
+        fileChooser.addChoosableFileFilter(fileFilter);
+        fileChooser.setFileFilter(fileFilter);
+        //fileChooser.showOpenDialog(this);// Launcher.LaucherConfMapUtil.getValue("dapp.initStepBase.frame.upload.avatar.title","Select Avatar Image")
+        fileChooser.showDialog(this, Launcher.LaucherConfMapUtil.getValue("dapp.initStepBase.frame.upload.avatar.title","Select Avatar Image"));
+        File selectedFile = fileChooser.getSelectedFile();
+
+        if(selectedFile != null){
+            //独立线程处理上传下载
+            new Thread(()->{
+                File dlAvatar ;
+                List<MerkleNode> nodes;
+
+                try{
+                    //上传前先压缩
+                    File compressFile = imageHandler.createdAvatar4Profile(selectedFile,null);
+
+                    NamedStreamable.FileWrapper fileWrapper = new NamedStreamable.FileWrapper(compressFile);
+                    nodes = ipfs.add(fileWrapper);
+                    avatar = nodes.get(0).hash.toBase58();
+                    avatarName = selectedFile.getName();
+
+                    //下载头像
+                    dlAvatar = downloadAvatar(avatar);
+                    ImageIcon icon = imageHandler.getImageIconFromOrigin(dlAvatar,128);
+
+                    if(null != icon){
+                        avatarLabel.setIcon(icon);
+                        avatarLabel.updateUI();
+                    }
+
+                }catch (Exception e){
+                    logger.error(e.getMessage(),e.getCause());
+                    //TODO
+                }
+                logger.info("设置头像上传成功.");
+            }).start();
+
+        }else {
+           // JOptionPane.showMessageDialog(this,
+           //         Launcher.LaucherConfMapUtil.getValue("dapp.initStepBase.frame.upload.avatar.tip","Please selected Images file."));
+        }
+    }
+
+    private File downloadAvatar(String hash) throws Exception{
+        String path ;
+        URL url;
+        File avatarFile;
+        path = Launcher.LaucherConfMapUtil.getGatewayUrl(hash);
+        url = new URL(path);
+        String filePath = DappCnsts.consturactPath(AvatarImageHandler.getAvatarProfileHome(),hash+AvatarImageHandler.AVATAR_SUFFIX);
+        avatarFile = new File(filePath);
+        boolean b = imageHandler.getFileFromIPFS(url,avatarFile);
+        return avatarFile;
+    }
+
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/17
+     * @Description  :
+     * 加载Node Info
+     */
+    public void loadNodeInfo(){
+
+        NodeBase nodeBase = null;
+        try{
+            Map m = ipfs.id();
+            nodeBase = DataConvertHelper.getInstance().convertFromID(m);
+            Map cfgMap = ipfs.config.show();
+            if(cfgMap.containsKey(ConfigCnsts.JSON_NICKNAME_KEY)){
+                nick = cfgMap.get(ConfigCnsts.JSON_NICKNAME_KEY).toString();
+            }else {
+                nick = RadomCharactersHelper.getInstance().generated(InitialDappFrame.NICK_PREFFIX,6);
+            }
+            if(cfgMap.containsKey(ConfigCnsts.JSON_AVATAR_KEY)){
+                avatar = cfgMap.get(ConfigCnsts.JSON_AVATAR_KEY).toString();
+                //TODO 加载头像
+            }
+            fillInfo(nodeBase,nick);
+        }catch (IOException e){
+            logger.warn(e.getMessage(),e.getCause());
+        }
+    }
+
+    private void fillInfo(NodeBase nodeBase,String nick){
+        if(nodeBase==null)return;
+        peerIdText.setText(nodeBase.getID());
+        nickField.setText(nick);
+        peerIdText.updateUI();
+        nickField.updateUI();
+    }
+
+    public static DappBaseStepPanel getContext() {
+        return context;
+    }
+
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/17
+     * @Description  :
+     *
+     */
+    public DappBaseStepPanel setIpfs(IPFS ipfs) {
+        this.ipfs = ipfs;
+        return context;
     }
 }

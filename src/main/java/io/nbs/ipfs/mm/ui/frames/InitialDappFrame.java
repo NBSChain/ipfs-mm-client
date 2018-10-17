@@ -10,6 +10,7 @@ import io.nbs.ipfs.mm.ui.panels.initialize.DappIPFSStepPanel;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
+import net.nbsio.ipfs.beans.PeerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,8 @@ public class InitialDappFrame extends JFrame {
 
     private static InitialDappFrame context;
 
+    public final static String NICK_PREFFIX = "NBSChain_";
+
     /* nav */
     private JPanel ctrlPanel;
     private JLabel titleLabel;
@@ -50,9 +53,9 @@ public class InitialDappFrame extends JFrame {
     private DappBaseStepPanel baseStepPanel;
     public  static Dimension buttonDimesion = new Dimension(115,35);
 
+
     public InitialDappFrame(){
         context = this;
-
         initComponents();
         initView();
         setListeners();
@@ -213,4 +216,5 @@ public class InitialDappFrame extends JFrame {
         titleLabel.updateUI();
         cardLayout.show(contentPanel,steps.name());
     }
+
 }
