@@ -275,16 +275,21 @@ public class DappBaseStepPanel extends JPanel {
                 //2.上传配置
                 try{
                     if(ipfs==null)ipfs = new IPFS(Launcher.LaucherConfMapUtil.getIpfsAddressApi());
-                    ipfs.config.set(ConfigCnsts.JSON_AVATAR_KEY,avatar);
                     ipfs.config.set(ConfigCnsts.JSON_NICKNAME_KEY, IPMParser.urlEncode(nick));
-                    ipfs.config.set(ConfigCnsts.JSON_AVATAR_NAME_KEY,IPMParser.urlEncode(avatarName));
-                    ipfs.config.set(ConfigCnsts.JSON_AVATAR_SUFFIX_KEY,ConfigCnsts.JSON_AVATAR_SUFFIX_PNG);
+                    if(StringUtils.isNotBlank(avatar)){
+                        ipfs.config.set(ConfigCnsts.JSON_AVATAR_KEY,avatar);
+                        ipfs.config.set(ConfigCnsts.JSON_AVATAR_SUFFIX_KEY,ConfigCnsts.JSON_AVATAR_SUFFIX_PNG);
+                    }
+                    if(StringUtils.isNotBlank(avatarName))ipfs.config.set(ConfigCnsts.JSON_AVATAR_NAME_KEY,IPMParser.urlEncode(avatarName));
                     logger.info("aHash:{} ;nick:{},aName:{}",avatar,nick,avatarName);
                 }catch (Exception  ex){
-
+                    logger.error("保存配置到NBS 服务失败.",ex.getCause());
+                    showStatus(Launcher.LaucherConfMapUtil.getValue("dapp.initStepBase.frame.button.save.warning","save base info to NBS Chain failure.")
+                            ,10);
                 }
 
                 //3.跳转
+
             }
         });
 
