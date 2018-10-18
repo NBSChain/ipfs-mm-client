@@ -10,6 +10,7 @@ import io.nbs.ipfs.mm.util.AvatarImageHandler;
 import io.nbs.ipfs.mm.util.ButtonIconUtil;
 import io.nbs.ipfs.mm.util.IconUtil;
 import net.nbsio.ipfs.beans.PeerInfo;
+import net.nbsio.ipfs.cfg.ConfigCnsts;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -142,6 +143,23 @@ public class ToolbarPanel extends JPanel {
         }else {
             ImageIcon iconDef = IconUtil.getIcon(this,"/icons/logo48.png");
             avatarLabel.setIcon(iconDef);
+            avatarLabel.updateUI();
+        }
+    }
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/18
+     * @Description  :
+     * 刷新toolbar 头像
+     */
+    public void refreshAvatar(){
+        PeerInfo info = Launcher.getContext().getCurrentPeer();
+        if(info==null|| StringUtils.isBlank(info.getAvatar()))return;
+        String baseFilePath = DappCnsts.consturactPath(AvatarImageHandler.getAvatarProfileHome(),info.getAvatar()+ ConfigCnsts.JSON_AVATAR_SUFFIX_PNG);
+        File baseFile = new File(baseFilePath);
+        if(baseFile.exists()){
+            ImageIcon icon = AvatarImageHandler.getInstance().getImageIconFromOrigin(baseFile,48);
+            avatarLabel.setIcon(icon);
             avatarLabel.updateUI();
         }
     }

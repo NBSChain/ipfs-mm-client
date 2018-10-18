@@ -134,6 +134,27 @@ public class AvatarImageHandler {
             return IconUtil.getIcon(this,"/icons/nbs128.png",size,size);
         }
     }
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/18
+     * @Description  :
+     * @Params avatarHash 原始大小文件hash 非空，
+     *          size 返回大小
+     *          默认icon path
+     * 获取头像
+     */
+    public ImageIcon getAvatarImageIcon(String avatarHash,int size,String defaultIcon){
+        if(size<=10)size = 16;
+        File avtatarFile = new File(DappCnsts.consturactPath(AVATAR_PROFILE_HOME,avatarHash+AVATAR_SUFFIX));
+        if(StringUtils.isBlank(defaultIcon))defaultIcon = "/icons/nbs750.png";
+        if(!avtatarFile.exists()||avtatarFile.isDirectory())
+            return IconUtil.getIcon(this,defaultIcon,size);
+        try {
+            return  new ImageIcon(getAvatarScaleImage(avtatarFile,size));
+        } catch (IOException e) {
+            return IconUtil.getIcon(this,defaultIcon,size);
+        }
+    }
 
     private Image getAvatarScaleImage(File file, int size) throws IOException {
         BufferedImage srcImage = ImageIO.read(file);
@@ -165,6 +186,7 @@ public class AvatarImageHandler {
         try {
             HttpURLConnection conn = (HttpURLConnection)url.openConnection();
             DataInputStream in = new DataInputStream(conn.getInputStream());
+            orifile.deleteOnExit();
             FileImageOutputStream out = new FileImageOutputStream(orifile);
             byte[] buffer = new byte[4096];
             int count = 0;

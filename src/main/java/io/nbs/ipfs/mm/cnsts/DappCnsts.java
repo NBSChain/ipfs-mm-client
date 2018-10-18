@@ -1,5 +1,7 @@
 package io.nbs.ipfs.mm.cnsts;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.awt.*;
 
 /**
@@ -60,6 +62,21 @@ public class DappCnsts {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/18
+     * @Description  :
+     * 
+     */
+    public static String getBaseUrl(String host,String port,String protocol){
+        if(StringUtils.isBlank(protocol))protocol = "http";
+        if(!protocol.equals("https")&& !protocol.equals("http"))protocol = "http";
+        StringBuffer apiBuf = new StringBuffer();
+        apiBuf.append(protocol).append("://").append(host).append(":")
+                .append(port).append("/api/v0/");
+        return apiBuf.toString();
     }
 
 }

@@ -1,12 +1,18 @@
 package io.nbs.ipfs.mm.ui.frames;
 
+import io.ipfs.api.IPFS;
+import io.nbs.ipfs.mm.Launcher;
 import io.nbs.ipfs.mm.cnsts.ColorCnst;
+import io.nbs.ipfs.mm.cnsts.DappCnsts;
+import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
 import io.nbs.ipfs.mm.ui.panels.MainContentPanel;
 import io.nbs.ipfs.mm.ui.panels.ToolbarPanel;
 import io.nbs.ipfs.mm.ui.panels.about.AboutMasterPanel;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
 import net.nbsio.ipfs.beans.PeerInfo;
+import net.nbsio.ipfs.helper.OkHttpHelper;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +42,7 @@ public class MainFrame extends JFrame {
     public static  int RIGHT_EIDTH = 540;
 
     public static final int TOOLBAR_WIDTH = 80;
+    public static boolean INFO_REFREHING = false;
 
     private PeerInfo currentPeer = null;
 
@@ -53,6 +60,8 @@ public class MainFrame extends JFrame {
     private CardLayout cardLayout;
 
     private AboutMasterPanel aboutMasterPanel;
+
+    private OkHttpHelper httpHelper;
 
 
     public MainFrame(PeerInfo peerInfo){
@@ -73,7 +82,12 @@ public class MainFrame extends JFrame {
      * 1.定时消息监听 ed.
      */
     private void initServices(){
-
+        String apiUrl = DappCnsts.getBaseUrl(
+                Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_HOST_KEY),
+                Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PORT_KEY),
+                Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PROTOCOL_KEY,"http")
+        );
+        httpHelper = OkHttpHelper.getInstance(apiUrl);
     }
 
     /*  comments : */
@@ -115,6 +129,7 @@ public class MainFrame extends JFrame {
         mainCentetPanel.setBackground(ColorCnst.WINDOW_BACKGROUND);
         mainCentetPanel.setLayout(cardLayout);
 
+        //关于
         aboutMasterPanel = new AboutMasterPanel();
 
         //TODO
@@ -141,7 +156,6 @@ public class MainFrame extends JFrame {
 
     /*  comments : 设置监听器 */
     private void setListeners(){
-
         this.addComponentListener(new ComponentAdapter(){
             @Override
             public void componentResized(ComponentEvent e) {
@@ -181,5 +195,19 @@ public class MainFrame extends JFrame {
      */
     public static MainFrame getContext(){
         return context;
+    }
+
+    /**
+     * @author      : lanbery
+     * @Datetime    : 2018/10/18
+     * @Description  :
+     * 
+     */
+    public void refreshToolbarAvatar(){
+        toolbarPanel.refreshAvatar();
+    }
+
+    public OkHttpHelper getHttpHelper() {
+        return httpHelper;
     }
 }

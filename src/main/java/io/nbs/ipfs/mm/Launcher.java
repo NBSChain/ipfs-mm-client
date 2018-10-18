@@ -55,6 +55,7 @@ public class Launcher {
      */
     public static String appBasePath;
     public static String CURRENT_DIR;
+    public static String DOWNLOAD_FILE_PATH;
 
     private IPFS ipfs;
     private PeerInfo currentPeer;
@@ -169,6 +170,7 @@ public class Launcher {
         }
 
         //
+        DOWNLOAD_FILE_PATH = DappCnsts.consturactPath(System.getProperty("user.home"),DappCnsts.NBS_ROOT);
     }
 
     public void buildCurrrentPeerInfo(IPFS ipfs) throws Exception {
@@ -353,6 +355,7 @@ public class Launcher {
     }
 
     public PeerInfo getCurrentPeer() {
+        if(currentPeer==null)currentPeer = new PeerInfo();
         return currentPeer;
     }
 
@@ -366,5 +369,15 @@ public class Launcher {
 
     public void setCurrentFrame(JFrame currentFrame) {
         this.currentFrame = currentFrame;
+    }
+
+    public IPFS getIpfs(){
+        if(ipfs==null){
+            try {
+                String apiUrl = LaucherConfMapUtil.getIpfsAddressApi();
+                ipfs = new IPFS(apiUrl);
+            }catch (Exception e){ }
+        }
+        return ipfs;
     }
 }
