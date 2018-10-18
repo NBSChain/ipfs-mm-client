@@ -1,6 +1,7 @@
 package io.nbs.ipfs.mm;
 
 import io.ipfs.api.IPFS;
+import io.nbs.ipfs.biz.utils.DataBaseUtil;
 import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
 import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
@@ -13,6 +14,7 @@ import net.nbsio.ipfs.beans.NodeBase;
 import net.nbsio.ipfs.beans.PeerInfo;
 import net.nbsio.ipfs.cfg.ConfigCnsts;
 import net.nbsio.ipfs.helper.DataConvertHelper;
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,8 @@ public class Launcher {
     private static Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     private static Launcher context;
+
+    private static SqlSession sqlSession;
 
     private JFrame currentFrame;
     public static ImageIcon logo ;
@@ -71,6 +75,7 @@ public class Launcher {
      */
     protected void launch(String[] agrs){
         context = this;
+        sqlSession = DataBaseUtil.getSqlSession();
         currentPeer = new PeerInfo();
         logo = IconUtil.getIcon(this,"/icons/nbs.png");
         argsParams = agrs;
@@ -334,6 +339,20 @@ public class Launcher {
             AppPropsUtil.setProperty(tKey,tVal);
         }
 
+        /**
+         * @author      : lanbery
+         * @Datetime    : 2018/10/18
+         * @Description  :
+         * 
+         */
+        public static boolean subWorldPeers(){
+            String stats = DAPP_CONFIG_MAP.getOrDefault("nbs.client.im.topic.subworld","disabled");
+            return(stats.equalsIgnoreCase("enabled")
+                    || stats.equalsIgnoreCase("true")
+                    || stats.equalsIgnoreCase("1")
+            )  ? true : false;
+        }
+
         public static void reloadDappProps(){
             Properties props = AppPropsUtil.reloadProps();
 
@@ -371,6 +390,10 @@ public class Launcher {
         this.currentFrame = currentFrame;
     }
 
+    public JFrame getCurrentFrame() {
+        return currentFrame;
+    }
+
     public IPFS getIpfs(){
         if(ipfs==null){
             try {
@@ -379,5 +402,9 @@ public class Launcher {
             }catch (Exception e){ }
         }
         return ipfs;
+    }
+
+    public static SqlSession getSqlSession() {
+        return sqlSession;
     }
 }

@@ -1,6 +1,6 @@
 package io.nbs.ipfs.mm.ui.frames;
 
-import io.ipfs.api.IPFS;
+import io.nbs.ipfs.biz.services.IpfsMessageSender;
 import io.nbs.ipfs.mm.Launcher;
 import io.nbs.ipfs.mm.cnsts.ColorCnst;
 import io.nbs.ipfs.mm.cnsts.DappCnsts;
@@ -8,12 +8,12 @@ import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
 import io.nbs.ipfs.mm.ui.panels.MainContentPanel;
 import io.nbs.ipfs.mm.ui.panels.ToolbarPanel;
 import io.nbs.ipfs.mm.ui.panels.about.AboutMasterPanel;
+import io.nbs.ipfs.mm.ui.panels.im.IMMasterPanel;
 import io.nbs.ipfs.mm.ui.panels.info.InfoMasterPanel;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
 import net.nbsio.ipfs.beans.PeerInfo;
 import net.nbsio.ipfs.helper.OkHttpHelper;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +49,10 @@ public class MainFrame extends JFrame {
 
     /* 主窗口 GUI */
     private static JPanel mainJPanel;
+    /**
+     * 聊天
+     */
+    private IMMasterPanel imMasterPanel;
 
     /**
      * 右侧窗口
@@ -70,6 +74,10 @@ public class MainFrame extends JFrame {
 
     private OkHttpHelper httpHelper;
 
+    /**
+     * 消息发送器
+     */
+    private IpfsMessageSender messageSender;
 
     public MainFrame(PeerInfo peerInfo){
         context = this;
@@ -96,6 +104,9 @@ public class MainFrame extends JFrame {
         );
         logger.info("baseApiURL:{}",apiUrl);
         httpHelper = OkHttpHelper.getInstance(apiUrl);
+
+        //
+        messageSender = new IpfsMessageSender(Launcher.getContext().getIpfs());
     }
 
     /*  comments : */
@@ -139,6 +150,7 @@ public class MainFrame extends JFrame {
 
         //功能窗口
         infoMasterPanel = new InfoMasterPanel();
+        imMasterPanel = new IMMasterPanel();
         //TODO
 
         //关于
@@ -229,5 +241,9 @@ public class MainFrame extends JFrame {
 
     public OkHttpHelper getHttpHelper() {
         return httpHelper;
+    }
+
+    public IpfsMessageSender getMessageSender() {
+        return messageSender;
     }
 }

@@ -22,6 +22,10 @@ public class DappCnsts {
      * 下载根路径
      */
     public static final String DAPP_DOWNLOAD_ROOTPATH_KEY = "dapp.download.rootpath.key";
+    /**
+     * 消息图标
+     */
+    public static final String IM_ICON_ROOT = "/icons/im/";
 
     /**
      * 客户端运行产生文件根目录
@@ -31,6 +35,11 @@ public class DappCnsts {
      * 临时文件目录
      */
     public static final String TEMP_FILE = "tmp";
+
+    /**
+     * 非NBS客户端区分
+     */
+    public static String NOTNBS_PEER_MIDDLE= "_NBSChain_";
 
     /**
      * 图标根
