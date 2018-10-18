@@ -15,6 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
 
@@ -30,6 +32,7 @@ import java.net.URL;
 public class ToolbarPanel extends JPanel {
 
     private static ToolbarPanel context;
+    private MainFrame mainCtx;
     private JPanel upButtonPanel;
     private JPanel bottomPanel;
 
@@ -57,10 +60,11 @@ public class ToolbarPanel extends JPanel {
 
     /* ToolbarPanel comments :  构造函数*/
     public ToolbarPanel() {
+        context = this;
+        mainCtx = MainFrame.getContext();
         initComponents();
         initView();
         setListeners();
-
         syncLoadAvatar();
     }
 
@@ -94,7 +98,6 @@ public class ToolbarPanel extends JPanel {
         upButtonPanel.add(dataBTN);
         upButtonPanel.add(musicBTN);
 
-
         bottomPanel.add(aboutBTN);
 
         add(upButtonPanel,
@@ -107,7 +110,52 @@ public class ToolbarPanel extends JPanel {
     }
 
     private void setListeners(){
+        infoBTN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedBTN(infoBTN);
+                mainCtx.mainWinShow(MainFrame.MainCardLayoutTypes.INFO);
+            }
+        });
 
+        imBTN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedBTN(imBTN);
+                mainCtx.mainWinShow(MainFrame.MainCardLayoutTypes.IM);
+            }
+        });
+
+        dataBTN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedBTN(dataBTN);
+                mainCtx.mainWinShow(MainFrame.MainCardLayoutTypes.DATD);
+            }
+        });
+
+        aboutBTN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedBTN(aboutBTN);
+                mainCtx.mainWinShow(MainFrame.MainCardLayoutTypes.ABOUT);
+            }
+        });
+
+
+
+        musicBTN.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectedBTN(musicBTN);
+                mainCtx.mainWinShow(MainFrame.MainCardLayoutTypes.MEDIA);
+            }
+        });
+    }
+
+    public void setDefaultSelected(){
+        selectedBTN(infoBTN);
+        MainFrame.getContext().mainWinShow(MainFrame.MainCardLayoutTypes.INFO);
     }
 
     /*  comments : 初始化按钮 */
@@ -164,6 +212,23 @@ public class ToolbarPanel extends JPanel {
         }
     }
 
+
+    /**
+     * Selection NBSButton
+     * @param btn
+     */
+    private void selectedBTN(NBSIconButton btn){
+        NBSIconButton[] btns = {infoBTN,imBTN,dataBTN,musicBTN,aboutBTN};
+        for(NBSIconButton button : btns){
+            if(btn != infoBTN)MainFrame.INFO_REFREHING = false;
+            if(btn==button){
+                button.actived();
+            }else {
+                button.normal();
+            }
+
+        }
+    }
     public static ToolbarPanel getContext() {
         return context;
     }

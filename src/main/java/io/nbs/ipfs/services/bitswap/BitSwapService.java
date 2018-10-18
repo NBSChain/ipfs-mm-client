@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import net.nbsio.ipfs.beans.ResData;
 import net.nbsio.ipfs.beans.bw.BitSwap;
 import net.nbsio.ipfs.beans.repo.RepoStat;
-import net.nbsio.ipfs.helper.HttpUtils;
 import net.nbsio.ipfs.helper.OkHttpHelper;
 import okhttp3.Response;
 import org.slf4j.Logger;
@@ -23,6 +22,7 @@ import java.io.IOException;
 public class BitSwapService {
     private static final Logger logger = LoggerFactory.getLogger(BitSwapService.class);
     private BitSwapService() {
+
     }
 
     public static BitSwapService getInstance(){
@@ -39,12 +39,11 @@ public class BitSwapService {
      */
     public ResData<RepoStat> getRepoStat(OkHttpHelper helper){
         if(helper==null)return new ResData<>(1,"no baseUrl");
-        String apiURL = OkHttpHelper.spliceUrl("repo/stat");
                 //getApiUrl("repo/stat",null);
         ResData<RepoStat> resData = null;
         Response response = null;
         try {
-            response =  HttpUtils.get(apiURL);
+            response =  helper.get("repo/stat");
             if(response.code()==200){
                 String resJsonStr = response.body().string();
                 //logger.info(resJsonStr);
@@ -67,11 +66,11 @@ public class BitSwapService {
      */
     public ResData<BitSwap> getBitSwapStat(OkHttpHelper helper){
         if(helper==null)return new ResData<>(1,"no baseUrl");
-        String apiURL = OkHttpHelper.spliceUrl("bitswap/stat");
+        String apiURL ="bitswap/stat";
         ResData<BitSwap> resData = null;
         Response response = null;
         try {
-            response =  HttpUtils.get(apiURL);
+            response =  helper.get(apiURL);
             if(response.code()==200){
                 String resJsonStr = response.body().string();
                 //logger.info(resJsonStr);

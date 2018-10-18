@@ -8,6 +8,7 @@ import io.nbs.ipfs.mm.cnsts.IPFSCnsts;
 import io.nbs.ipfs.mm.ui.panels.MainContentPanel;
 import io.nbs.ipfs.mm.ui.panels.ToolbarPanel;
 import io.nbs.ipfs.mm.ui.panels.about.AboutMasterPanel;
+import io.nbs.ipfs.mm.ui.panels.info.InfoMasterPanel;
 import io.nbs.ipfs.mm.util.FontUtil;
 import io.nbs.ipfs.mm.util.OSUtil;
 import net.nbsio.ipfs.beans.PeerInfo;
@@ -59,6 +60,12 @@ public class MainFrame extends JFrame {
     private MainContentPanel mainCentetPanel;
     private CardLayout cardLayout;
 
+    /* 功能窗口 */
+    /**
+     * PEER INFO
+     */
+    private InfoMasterPanel infoMasterPanel;
+
     private AboutMasterPanel aboutMasterPanel;
 
     private OkHttpHelper httpHelper;
@@ -87,7 +94,9 @@ public class MainFrame extends JFrame {
                 Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PORT_KEY),
                 Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PROTOCOL_KEY,"http")
         );
+        logger.info("baseApiURL:{}",apiUrl);
         httpHelper = OkHttpHelper.getInstance(apiUrl);
+
     }
 
     /*  comments : */
@@ -129,11 +138,15 @@ public class MainFrame extends JFrame {
         mainCentetPanel.setBackground(ColorCnst.WINDOW_BACKGROUND);
         mainCentetPanel.setLayout(cardLayout);
 
+        //功能窗口
+        infoMasterPanel = new InfoMasterPanel();
+        //TODO
+
         //关于
         aboutMasterPanel = new AboutMasterPanel();
 
-        //TODO
 
+        mainCentetPanel.add(infoMasterPanel,MainCardLayoutTypes.INFO.name());
         mainCentetPanel.add(aboutMasterPanel,MainCardLayoutTypes.ABOUT.name());
     }
 
@@ -150,6 +163,10 @@ public class MainFrame extends JFrame {
 
         //TODO 中心内容
 
+        /**
+         * 设置默认显示
+         */
+        toolbarPanel.setDefaultSelected();
         add(mainJPanel);
         centerScreen();
     }
@@ -195,6 +212,10 @@ public class MainFrame extends JFrame {
      */
     public static MainFrame getContext(){
         return context;
+    }
+
+    public void mainWinShow(MainCardLayoutTypes ctlType){
+        cardLayout.show(mainCentetPanel,ctlType.name());
     }
 
     /**
