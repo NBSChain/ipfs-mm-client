@@ -22,7 +22,6 @@ import java.io.IOException;
 public class BitSwapService {
     private static final Logger logger = LoggerFactory.getLogger(BitSwapService.class);
     private BitSwapService() {
-
     }
 
     public static BitSwapService getInstance(){

@@ -158,7 +158,6 @@ public class InFoBitswapPanel extends ParentAvailablePanel {
 
         wantSizeVolume.setText(bitSwap.getWantSize()+"");
         partnersVolume.setText(bitSwap.getPeersSize()+"个");
-
     }
 
     public void refreshData(BitSwap bitSwap){

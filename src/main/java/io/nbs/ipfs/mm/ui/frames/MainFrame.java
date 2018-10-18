@@ -91,12 +91,11 @@ public class MainFrame extends JFrame {
     private void initServices(){
         String apiUrl = DappCnsts.getBaseUrl(
                 Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_HOST_KEY),
-                Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PORT_KEY),
+                Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_API_PORT_KEY),
                 Launcher.LaucherConfMapUtil.getValue(IPFSCnsts.MM_GATEWAY_PROTOCOL_KEY,"http")
         );
         logger.info("baseApiURL:{}",apiUrl);
         httpHelper = OkHttpHelper.getInstance(apiUrl);
-
     }
 
     /*  comments : */
